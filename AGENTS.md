@@ -7,9 +7,13 @@
 - Automation & Specs: `.github/` (agents/prompts) and `.specify/` (templates, scripts) support planning and review workflows.
 
 ## Build, Test, and Development Commands
-- Open in Xcode: `open GitReviewIt.xcodeproj` (build and run with the default scheme).
-- CLI build: `xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' build` (compiles the app).
-- CLI tests (when tests exist): `xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' test`.
+- **Justfile Available**: Use `just` to run common build commands. See `just --list` for all available commands.
+- Quick build: `just build` (compiles the app).
+- Clean build: `just clean-build` (removes artifacts and compiles fresh).
+- Run tests: `just test` (when tests exist).
+- Open in Xcode: `just open` or `open GitReviewIt.xcodeproj` (build and run with the default scheme).
+- CLI build (manual): `xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' build` (compiles the app).
+- CLI tests (manual): `xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' test`.
 
 ## Coding Style & Naming Conventions
 - Language: Swift (SwiftUI). Use 4-space indentation and limit line length to ~120 chars.

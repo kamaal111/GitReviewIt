@@ -20,10 +20,10 @@
 
 - [X] T001 Create project directory structure per plan.md in GitReviewIt/
 - [X] T002 ⚠️ HUMAN: Add CFBundleURLTypes with gitreviewit custom URL scheme in Info.plist (see HUMAN_HELP_NEEDED.md #1)
-- [ ] T003 Create GitReviewIt/Infrastructure/ directory structure (Networking/, Storage/, OAuth/)
-- [ ] T004 Create GitReviewIt/Features/ directory structure (Authentication/, PullRequests/)
-- [ ] T005 Create GitReviewIt/Shared/ directory structure (Views/, Models/)
-- [ ] T006 Create GitReviewItTests/ directory structure (IntegrationTests/, TestDoubles/, Fixtures/)
+- [X] T003 Create GitReviewIt/Infrastructure/ directory structure (Networking/, Storage/, OAuth/)
+- [X] T004 Create GitReviewIt/Features/ directory structure (Authentication/, PullRequests/)
+- [X] T005 Create GitReviewIt/Shared/ directory structure (Views/, Models/)
+- [X] T006 Create GitReviewItTests/ directory structure (IntegrationTests/, TestDoubles/, Fixtures/)
 
 ---
 
@@ -35,11 +35,11 @@
 
 ### Error Types & Models
 
-- [ ] T007 [P] Create APIError enum in GitReviewIt/Shared/Models/APIError.swift
-- [ ] T008 [P] Create LoadingState generic enum in GitReviewIt/Shared/Models/LoadingState.swift
-- [ ] T009 [P] Create TokenStorageError enum in GitReviewIt/Infrastructure/Storage/TokenStorage.swift
-- [ ] T010 [P] Create OAuthError enum in GitReviewIt/Infrastructure/OAuth/OAuthManager.swift
-- [ ] T011 [P] Create HTTPError enum in GitReviewIt/Infrastructure/Networking/HTTPClient.swift
+- [X] T007 [P] Create APIError enum in GitReviewIt/Shared/Models/APIError.swift
+- [X] T008 [P] Create LoadingState generic enum in GitReviewIt/Shared/Models/LoadingState.swift
+- [X] T009 [P] Create TokenStorageError enum in GitReviewIt/Infrastructure/Storage/TokenStorage.swift
+- [X] T010 [P] Create OAuthError enum in GitReviewIt/Infrastructure/OAuth/OAuthManager.swift
+- [X] T011 [P] Create HTTPError enum in GitReviewIt/Infrastructure/Networking/HTTPClient.swift
 
 ### Protocol Definitions
 
