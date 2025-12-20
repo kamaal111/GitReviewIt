@@ -43,16 +43,16 @@
 
 ### Protocol Definitions
 
-- [ ] T012 [P] Define HTTPClient protocol in GitReviewIt/Infrastructure/Networking/HTTPClient.swift
-- [ ] T013 [P] Define TokenStorage protocol in GitReviewIt/Infrastructure/Storage/TokenStorage.swift
-- [ ] T014 [P] Define OAuthManager protocol in GitReviewIt/Infrastructure/OAuth/OAuthManager.swift
-- [ ] T015 [P] Define GitHubAPI protocol in GitReviewIt/Infrastructure/Networking/GitHubAPI.swift
+- [X] T012 [P] Define HTTPClient protocol in GitReviewIt/Infrastructure/Networking/HTTPClient.swift
+- [X] T013 [P] Define TokenStorage protocol in GitReviewIt/Infrastructure/Storage/TokenStorage.swift
+- [X] T014 [P] Define OAuthManager protocol in GitReviewIt/Infrastructure/OAuth/OAuthManager.swift
+- [X] T015 [P] Define GitHubAPI protocol in GitReviewIt/Infrastructure/Networking/GitHubAPI.swift
 
 ### Domain Models
 
-- [ ] T016 [P] Create GitHubToken struct in GitReviewIt/Features/Authentication/Models/GitHubToken.swift
-- [ ] T017 [P] Create AuthenticatedUser struct in GitReviewIt/Features/Authentication/Models/AuthenticatedUser.swift
-- [ ] T018 [P] Create PullRequest struct in GitReviewIt/Features/PullRequests/Models/PullRequest.swift
+- [X] T016 [P] Create GitHubToken struct in GitReviewIt/Features/Authentication/Models/GitHubToken.swift
+- [X] T017 [P] Create AuthenticatedUser struct in GitReviewIt/Features/Authentication/Models/AuthenticatedUser.swift
+- [X] T018 [P] Create PullRequest struct in GitReviewIt/Features/PullRequests/Models/PullRequest.swift
 
 ### Production Implementations
 
