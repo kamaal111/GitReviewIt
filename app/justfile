@@ -1,10 +1,101 @@
+set dotenv-load
+
 PROJECT := "GitReviewIt.xcodeproj"
 SCHEME := "GitReviewIt"
 MACOS_PLATFORM := "platform=macOS"
+PAYLOAD := "payload"
+PKG_PAYLOAD := PAYLOAD / "Applications"
+OUTPUT := "out"
+APP_NAME := "GitReviewIt"
+APP_PATH := OUTPUT / APP_NAME + ".app"
+ARCHIVE_PATH := OUTPUT / APP_NAME + ".xcarchive"
+MACOS_SDK := "macosx"
+RESOURCES := "Resources"
+EXPORT_OPTIONS := RESOURCES / "ExportOptions.plist"
+COMPONENT := RESOURCES / "Component.plist"
+PKG_SCRIPTS := RESOURCES / "PKGScripts"
+PKG_INSTALL_LOCATION := "/Applications"
+NOTARY_PROFILE := "AC_NOTARY_PROFILE"
 
 # Default recipe - shows available commands
 default:
     @just --list --unsorted
+
+# Create .pkg
+create-pkg: create-app
+    #!/bin/zsh
+
+    if [[ -z "$INSTALLER_CERTIFICATE_NAME" ]]
+    then
+      echo "❌ INSTALLER_CERTIFICATE_NAME is empty. Set it to your 'Developer ID Installer: …' certificate name."
+      security find-identity -p codesigning -v | grep "Developer ID Installer" || true
+      exit 1
+    fi
+
+    mkdir -p {{ PKG_PAYLOAD }}
+    cp -R {{ APP_PATH }} "{{ PKG_PAYLOAD }}/"
+
+    export VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "{{ APP_PATH }}/Contents/Info.plist")
+    export PKG_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "{{ APP_PATH }}/Contents/Info.plist")
+    export PKG_PATH="{{ OUTPUT }}/{{ SCHEME }}.pkg"
+
+    echo "🔏 Running codesign checks on .app..."
+    codesign --verify --deep --strict --verbose=2 {{ APP_PATH }}
+
+    echo "📦 Building signed .pkg..."
+    typeset -a PKGBUILD_ARGS
+    PKGBUILD_ARGS=(
+        --root {{ PKG_PAYLOAD }}
+        --component-plist {{ COMPONENT }}
+        --install-location {{ PKG_INSTALL_LOCATION }}
+        --identifier "$PKG_ID"
+        --version "$VERSION"
+        --sign "$INSTALLER_CERTIFICATE_NAME"
+        --timestamp
+    )
+
+    if [[ -d {{ PKG_SCRIPTS }} ]]; then
+      echo "🧩 Including installer scripts from '{{ PKG_SCRIPTS }}'"
+      PKGBUILD_ARGS+=(--scripts {{ PKG_SCRIPTS }})
+    fi
+
+    pkgbuild "${PKGBUILD_ARGS[@]}" "$PKG_PATH"
+
+    echo "🧾 pkg signature:"
+    pkgutil --check-signature "$PKG_PATH" || exit 1
+
+    echo "📨 Notarizing .pkg..."
+    xcrun notarytool submit "$PKG_PATH" --keychain-profile {{ NOTARY_PROFILE }} --wait || exit 1
+
+    echo "📎 Stapling notarization ticket to .pkg..."
+    xcrun stapler staple "$PKG_PATH" || exit 1
+
+    echo "🔍 Verifying Gatekeeper..."
+    spctl --assess --type install -vv "$PKG_PATH" || exit 1
+    xcrun stapler validate "$PKG_PATH" || exit 1
+
+    echo "✅ Done"
+    echo "📦 PKG: $PKG_PATH"
+
+# Create app
+create-app: archive
+    #!/bin/zsh
+
+    set -o pipefail && xcodebuild -exportArchive \
+        -archivePath {{ ARCHIVE_PATH }} \
+        -exportOptionsPlist {{ EXPORT_OPTIONS }} \
+        -exportPath {{ OUTPUT }} | xcpretty
+# Archive app
+archive: install-xcpretty clean-artifacts prepare-output
+    #!/bin/zsh
+
+    set -o pipefail && xcodebuild archive \
+        -project {{ PROJECT }} \
+        -scheme {{ SCHEME }} \
+        -configuration Release \
+        -archivePath {{ ARCHIVE_PATH }} \
+        -sdk {{ MACOS_SDK }} \
+        -destination {{ MACOS_PLATFORM }} | xcpretty
 
 # Build the project for macOS
 build: install-xcpretty
@@ -36,6 +127,18 @@ lint:
 
 # Bootstrap app for development
 bootstrap: install-tools
+
+[private]
+prepare-output:
+    #!/bin/zsh
+
+    mkdir -p {{ OUTPUT }}
+
+[private]
+clean-artifacts:
+    #!/bin/zsh
+
+    rm -rf $PAYLOAD {{ OUTPUT }} || exit 1
 
 [private]
 install-tools: install-xcpretty

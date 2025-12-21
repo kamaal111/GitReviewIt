@@ -2,6 +2,18 @@
 default:
     @just --list --unsorted
 
+# Create .pkg
+create-pkg:
+    just app/create-pkg
+
+# Create app
+create-app:
+    just app/create-app
+
+# Archive app
+archive:
+    just app/archive
+
 # Build the project for macOS
 build:
     just app/build
