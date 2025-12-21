@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 /// Protocol for HTTP networking operations
 protocol HTTPClient: Sendable {
@@ -154,6 +155,7 @@ extension HTTPError: LocalizedError {
 /// Production implementation of HTTPClient using URLSession
 final class URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
+    private let logger = Logger(subsystem: "com.gitreviewit.app", category: "HTTPClient")
     
     /// Initialize with a custom URLSession (default creates standard configuration)
     /// - Parameter session: URLSession to use for requests
@@ -166,19 +168,55 @@ final class URLSessionHTTPClient: HTTPClient {
     /// - Returns: Response data and HTTPURLResponse
     /// - Throws: HTTPError for various failure scenarios
     func perform(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let startTime = Date()
+        let method = request.httpMethod ?? "GET"
+        let url = request.url?.absoluteString ?? "unknown"
+        
+        // Log request details (excluding sensitive headers)
+        var logHeaders: [String: String] = [:]
+        if let headers = request.allHTTPHeaderFields {
+            for (key, value) in headers {
+                // Don't log authorization header for security
+                if key.lowercased() != "authorization" {
+                    logHeaders[key] = value
+                } else {
+                    logHeaders[key] = "[REDACTED]"
+                }
+            }
+        }
+        
+        logger.info("HTTP Request: \(method) \(url, privacy: .public)")
+        if !logHeaders.isEmpty {
+            logger.debug("Request headers: \(String(describing: logHeaders), privacy: .public)")
+        }
+        
         do {
             let (data, response) = try await session.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
+                logger.error("Invalid response type received")
                 throw HTTPError.invalidResponse
             }
             
+            let duration = Date().timeIntervalSince(startTime)
+            let statusCode = httpResponse.statusCode
+            let dataSize = data.count
+            
+            logger.info("HTTP Response: \(method) \(url, privacy: .public) - \(statusCode) (\(String(format: "%.3f", duration))s, \(dataSize) bytes)")
+            
             return (data, httpResponse)
         } catch let error as HTTPError {
+            let duration = Date().timeIntervalSince(startTime)
+            logger.error("HTTP Request failed: \(method) \(url, privacy: .public) - \(error.localizedDescription) (\(String(format: "%.3f", duration))s)")
             throw error
         } catch let urlError as URLError {
-            throw mapURLError(urlError)
+            let duration = Date().timeIntervalSince(startTime)
+            let mappedError = mapURLError(urlError)
+            logger.error("HTTP Request failed: \(method) \(url, privacy: .public) - \(mappedError.localizedDescription) (\(String(format: "%.3f", duration))s)")
+            throw mappedError
         } catch {
+            let duration = Date().timeIntervalSince(startTime)
+            logger.error("HTTP Request failed: \(method) \(url, privacy: .public) - Unknown error: \(error.localizedDescription) (\(String(format: "%.3f", duration))s)")
             throw HTTPError.unknown(error)
         }
     }

@@ -14,6 +14,7 @@ struct LoginView: View {
     @State private var baseURL: String = "https://api.github.com"
     @State private var showValidationError: Bool = false
     @State private var validationMessage: String = ""
+    @State private var showPATInstructions: Bool = false
 
     // MARK: - Initialization
 
@@ -41,8 +42,19 @@ struct LoginView: View {
             VStack(spacing: 16) {
                 // Personal Access Token Field
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Personal Access Token")
-                        .font(.headline)
+                    HStack(spacing: 4) {
+                        Text("Personal Access Token")
+                            .font(.headline)
+
+                        Button {
+                            showPATInstructions = true
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("How to create a Personal Access Token")
+                    }
 
                     SecureField("ghp_xxxxxxxxxxxxxxxxxxxx", text: $token)
                         .textFieldStyle(.roundedBorder)
@@ -107,6 +119,9 @@ struct LoginView: View {
         }
         .padding()
         .frame(minWidth: 400, minHeight: 500)
+        .sheet(isPresented: $showPATInstructions) {
+            PATInstructionsSheet(isPresented: $showPATInstructions)
+        }
     }
 
     // MARK: - Actions
@@ -155,5 +170,145 @@ struct LoginView: View {
 
         showValidationError = false
         return true
+    }
+}
+
+// MARK: - PAT Instructions Sheet
+
+/// Sheet view that explains how to create a GitHub Personal Access Token
+private struct PATInstructionsSheet: View {
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // Header
+            HStack {
+                Text("How to Create a Personal Access Token")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+
+                Spacer()
+
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Divider()
+
+            // Instructions
+            VStack(alignment: .leading, spacing: 16) {
+                InstructionStep(
+                    number: 1,
+                    title: "Go to GitHub Settings",
+                    description:
+                        "Click your profile picture → Settings → Developer settings → Personal access tokens → Tokens (classic)"
+                )
+
+                InstructionStep(
+                    number: 2,
+                    title: "Generate New Token",
+                    description:
+                        "Click \"Generate new token\" and select \"Generate new token (classic)\""
+                )
+
+                InstructionStep(
+                    number: 3,
+                    title: "Configure Token",
+                    description:
+                        "Give it a descriptive name, set an expiration, and select the following scopes:"
+                )
+
+                // Required scopes
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Required Scopes:")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+
+                    HStack(spacing: 8) {
+                        ScopeBadge(scope: "repo")
+                        ScopeBadge(scope: "read:user")
+                    }
+                }
+                .padding(.leading, 36)
+
+                InstructionStep(
+                    number: 4,
+                    title: "Copy Your Token",
+                    description:
+                        "Click \"Generate token\" and copy it immediately — you won't be able to see it again!"
+                )
+            }
+
+            Spacer()
+
+            // Open GitHub Button
+            HStack {
+                Spacer()
+
+                Link(destination: URL(string: "https://github.com/settings/tokens/new")!) {
+                    HStack {
+                        Text("Open GitHub Token Settings")
+                        Image(systemName: "arrow.up.right")
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+
+                Spacer()
+            }
+        }
+        .padding(24)
+        .frame(width: 500, height: 450)
+    }
+}
+
+/// A single numbered instruction step
+private struct InstructionStep: View {
+    let number: Int
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(number)")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .frame(width: 24, height: 24)
+                .background(Circle().fill(.blue))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+/// A badge showing a required scope
+private struct ScopeBadge: View {
+    let scope: String
+
+    var body: some View {
+        Text(scope)
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(.blue.opacity(0.1))
+            )
+            .foregroundStyle(.blue)
     }
 }

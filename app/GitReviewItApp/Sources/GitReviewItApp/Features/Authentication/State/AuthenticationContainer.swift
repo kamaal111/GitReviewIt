@@ -14,7 +14,7 @@ final class AuthenticationContainer {
 
     // MARK: - Observable State
 
-    private(set) var authState: AuthState = .unauthenticated
+    private(set) var authState: AuthState = .unknown
     private(set) var isLoading = false
     private(set) var error: APIError?
 
@@ -128,11 +128,20 @@ final class AuthenticationContainer {
 
 extension AuthenticationContainer {
     enum AuthState {
+        /// Initial state before checking for stored credentials
+        case unknown
         case unauthenticated
         case authenticated(user: AuthenticatedUser, credentials: GitHubCredentials)
 
         var isAuthenticated: Bool {
             if case .authenticated = self {
+                return true
+            }
+            return false
+        }
+
+        var isUnknown: Bool {
+            if case .unknown = self {
                 return true
             }
             return false

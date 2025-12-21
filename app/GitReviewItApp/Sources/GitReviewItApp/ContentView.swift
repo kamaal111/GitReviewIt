@@ -31,15 +31,20 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if authContainer.isLoading && !authContainer.authState.isAuthenticated {
-                // Show loading state during initial credential check
-                LoadingView(message: "Checking credentials...")
-            } else if authContainer.authState.isAuthenticated {
+            switch authContainer.authState {
+            case .unknown:
+                // Initial state - show loading while checking for stored credentials
+                LoadingView(message: "Loading...")
+            case .authenticated:
                 // User is authenticated - show main app
                 PullRequestListView()
-            } else {
+            case .unauthenticated:
                 // User is not authenticated - show login
-                LoginView(container: authContainer)
+                if authContainer.isLoading {
+                    LoadingView(message: "Signing in...")
+                } else {
+                    LoginView(container: authContainer)
+                }
             }
         }
         .task {
