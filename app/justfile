@@ -1,37 +1,51 @@
-# Run with: just <command>
+PROJECT := "GitReviewIt.xcodeproj"
+SCHEME := "GitReviewIt"
+MACOS_PLATFORM := "platform=macOS"
 
 # Default recipe - shows available commands
 default:
-    @just --list
+    @just --list --unsorted
 
 # Build the project for macOS
-build:
-    xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' build
+build: install-xcpretty
+    set -o pipefail && xcodebuild -project {{ PROJECT }} \
+        -scheme {{ SCHEME }} -destination {{ MACOS_PLATFORM }} build | xcpretty
 
 # Clean and build the project
-clean-build:
-    xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' clean build
+clean-build: install-xcpretty
+    set -o pipefail && xcodebuild -project {{ PROJECT }} \
+        -scheme {{ SCHEME }} -destination {{ MACOS_PLATFORM }} clean build | xcpretty
 
 # Run tests
 test:
-    xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' test
+    xcodebuild -project {{ PROJECT }} -scheme {{ SCHEME }} \
+        -destination {{ MACOS_PLATFORM }} test
 
 # Clean the build artifacts
-clean:
-    xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' clean
+clean: install-xcpretty
+    set -o pipefail && xcodebuild -project {{ PROJECT }} \
+        -scheme {{ SCHEME }} -destination {{ MACOS_PLATFORM }} clean | xcpretty
 
 # Open the project in Xcode
 open:
-    open GitReviewIt.xcodeproj
-
-# Run the app (build and launch)
-run: build
-    open /Users/kamaal/Library/Developer/Xcode/DerivedData/GitReviewIt-*/Build/Products/Debug/GitReviewIt.app
-
-# Check for syntax errors without building
-check:
-    xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' -dry-run build
+    open {{ PROJECT }}
 
 # Lint the code
 lint:
     swiftlint lint --config ../.swiftlint.yml --no-cache
+
+# Bootstrap app for development
+bootstrap: install-tools
+
+[private]
+install-tools: install-xcpretty
+
+[private]
+install-xcpretty:
+    #!/bin/zsh
+
+    if ! command -v xcpretty &> /dev/null
+    then
+        echo "📦 xcpretty is not installed. Installing via Gem..."
+        gem install create-dmg || exit 1
+    fi
