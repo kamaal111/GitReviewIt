@@ -92,17 +92,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T033 [US1] Create AuthenticationContainer (@Observable) in app/GitReviewItApp/Sources/GitReviewItApp/Features/Authentication/State/AuthenticationContainer.swift
-- [ ] T034 [US1] Implement validateAndSaveCredentials(token:baseURL:) method in AuthenticationContainer (validates via GET /user, stores if valid)
-- [ ] T035 [US1] Implement logout() method in AuthenticationContainer
-- [ ] T036 [US1] Create LoginView with PAT TextField, optional baseURL TextField (default: https://api.github.com), "Need a token?" help link (opens https://github.com/settings/tokens), and Sign In button in app/GitReviewItApp/Sources/GitReviewItApp/Features/Authentication/Views/LoginView.swift
-- [ ] T037 [US1] Connect LoginView to AuthenticationContainer using @State
-- [ ] T038 [US1] Add input validation in LoginView (non-empty token, valid URL format for baseURL)
-- [ ] T039 [US1] Update ContentView to conditionally show LoginView vs PullRequestListView based on auth state
-- [ ] T040 [US1] Create AuthenticationFlowTests in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/AuthenticationFlowTests.swift
-- [ ] T041 [US1] Add test for successful PAT validation and credential storage
-- [ ] T042 [US1] Add test for invalid PAT handling (401 response)
-- [ ] T043 [US1] Add test for GitHub Enterprise custom baseURL authentication
+- [X] T033 [US1] Create AuthenticationContainer (@Observable) in app/GitReviewItApp/Sources/GitReviewItApp/Features/Authentication/State/AuthenticationContainer.swift
+- [X] T034 [US1] Implement validateAndSaveCredentials(token:baseURL:) method in AuthenticationContainer (validates via GET /user, stores if valid)
+- [X] T035 [US1] Implement logout() method in AuthenticationContainer
+- [X] T036 [US1] Create LoginView with PAT TextField, optional baseURL TextField (default: https://api.github.com), "Need a token?" help link (opens https://github.com/settings/tokens), and Sign In button in app/GitReviewItApp/Sources/GitReviewItApp/Features/Authentication/Views/LoginView.swift
+- [X] T037 [US1] Connect LoginView to AuthenticationContainer using @State
+- [X] T038 [US1] Add input validation in LoginView (non-empty token, valid URL format for baseURL)
+- [X] T039 [US1] Update ContentView to conditionally show LoginView vs PullRequestListView based on auth state
+- [X] T040 [US1] Create AuthenticationFlowTests in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/AuthenticationFlowTests.swift
+- [X] T041 [US1] Add test for successful PAT validation and credential storage
+- [X] T042 [US1] Add test for invalid PAT handling (401 response)
+- [X] T043 [US1] Add test for GitHub Enterprise custom baseURL authentication
 
 **Checkpoint**: User Story 1 complete - users can authenticate with PAT (including GitHub Enterprise) and credentials are stored
 
