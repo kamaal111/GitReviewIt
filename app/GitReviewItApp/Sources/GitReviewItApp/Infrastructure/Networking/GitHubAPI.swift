@@ -18,7 +18,7 @@ protocol GitHubAPI: Sendable {
     /// - Throws: APIError if request fails
     func fetchTeams(credentials: GitHubCredentials) async throws -> [Team]
 
-    /// Fetches pull requests where the authenticated user's review is requested
+    /// Fetches pull requests where the authenticated user's review is requested or they are assigned
     ///
     /// - Parameter credentials: GitHub credentials (token + baseURL)
     /// - Returns: Array of PullRequest objects (may be empty)
@@ -113,7 +113,10 @@ final class GitHubAPIClient: GitHubAPI {
         }
 
         // Build list of queries
-        var queries = ["type:pr+state:open+review-requested:\(user.login)"]
+        var queries = [
+            "type:pr+state:open+review-requested:\(user.login)",
+            "type:pr+state:open+assignee:\(user.login)",
+        ]
         for team in teams {
             queries.append("type:pr+state:open+team-review-requested:\(team.fullSlug)")
         }
@@ -125,22 +128,24 @@ final class GitHubAPIClient: GitHubAPI {
                     try await self.performSearch(query: query, credentials: credentials)
                 }
             }
-            
+
             var allPRs: [PullRequest] = []
             for try await prs in group {
                 allPRs.append(contentsOf: prs)
             }
-            
+
             // Deduplicate by ID (which is owner/repo#number)
             let uniquePRs = Dictionary(grouping: allPRs, by: { $0.id })
                 .compactMap { $0.value.first }
                 .sorted { $0.updatedAt > $1.updatedAt }
-                
+
             return uniquePRs
         }
     }
-    
-    private func performSearch(query: String, credentials: GitHubCredentials) async throws -> [PullRequest] {
+
+    private func performSearch(query: String, credentials: GitHubCredentials) async throws
+        -> [PullRequest]
+    {
         let baseURL = credentials.baseURL.trimmingSuffix("/")
         guard var components = URLComponents(string: "\(baseURL)/search/issues") else {
             throw APIError.invalidResponse
@@ -173,12 +178,12 @@ final class GitHubAPIClient: GitHubAPI {
             throw APIError.decodingError(error)
         }
     }
-    
+
     private func mapSearchIssueToPullRequest(_ item: SearchIssueItem) -> PullRequest? {
         guard let (owner, name) = extractRepositoryInfo(from: item.repository_url) else {
             return nil
         }
-        
+
         return PullRequest(
             repositoryOwner: owner,
             repositoryName: name,
@@ -245,7 +250,7 @@ final class GitHubAPIClient: GitHubAPI {
         if let reposIndex = components.lastIndex(of: "repos"), reposIndex + 2 < components.count {
             return (owner: components[reposIndex + 1], name: components[reposIndex + 2])
         }
-        
+
         // Fallback for standard path
         if components.count >= 4, components[1] == "repos" {
             return (owner: components[2], name: components[3])
