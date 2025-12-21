@@ -37,8 +37,7 @@ final class AuthenticationContainer {
     ///   - token: The GitHub Personal Access Token to validate
     ///   - baseURL: The GitHub API base URL (default: https://api.github.com, or custom for GitHub Enterprise)
     /// - Throws: APIError if validation fails, or CredentialStorageError if storage fails
-    func validateAndSaveCredentials(token: String, baseURL: String = "https://api.github.com") async
-    {
+    func validateAndSaveCredentials(token: String, baseURL: String = "https://api.github.com") async {
         isLoading = true
         error = nil
 

@@ -206,7 +206,10 @@ private struct PATInstructionsSheet: View {
                         number: 1,
                         title: "Go to GitHub Settings",
                         description:
-                            "Click your profile picture → Settings → Developer settings → Personal access tokens → Tokens (classic)"
+                            """
+                            Click your profile picture → Settings → Developer settings →
+                            Personal access tokens → Tokens (classic)
+                            """
                     )
 
                     InstructionStep(
@@ -319,28 +322,28 @@ private struct ScopeBadge: View {
 }
 
 #if DEBUG
-private struct PreviewGitHubAPI: GitHubAPI {
-    func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
-        AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
+    private struct PreviewGitHubAPI: GitHubAPI {
+        func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
+            AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
+        }
+
+        func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
+
+        func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] { [] }
     }
-    
-    func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
-    
-    func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] { [] }
-}
 
-private struct PreviewCredentialStorage: CredentialStorage {
-    func store(_ credentials: GitHubCredentials) async throws {}
-    func retrieve() async throws -> GitHubCredentials? { nil }
-    func delete() async throws {}
-}
+    private struct PreviewCredentialStorage: CredentialStorage {
+        func store(_ credentials: GitHubCredentials) async throws {}
+        func retrieve() async throws -> GitHubCredentials? { nil }
+        func delete() async throws {}
+    }
 
-#Preview {
-    LoginView(
-        container: AuthenticationContainer(
-            githubAPI: PreviewGitHubAPI(),
-            credentialStorage: PreviewCredentialStorage()
+    #Preview {
+        LoginView(
+            container: AuthenticationContainer(
+                githubAPI: PreviewGitHubAPI(),
+                credentialStorage: PreviewCredentialStorage()
+            )
         )
-    )
-}
+    }
 #endif

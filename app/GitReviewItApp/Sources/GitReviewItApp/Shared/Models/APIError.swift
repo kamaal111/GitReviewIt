@@ -69,7 +69,11 @@ extension APIError: LocalizedError {
         switch self {
         case .networkError(let error):
             return
-                "We couldn't connect to GitHub. Please check your internet connection and ensure the API URL is correct.\n\nDetails: \(error.localizedDescription)"
+                """
+                We couldn't connect to GitHub. Please check your internet connection and ensure the API URL is correct.
+
+                Details: \(error.localizedDescription)
+                """
         case .networkUnreachable:
             return "You seem to be offline. Please check your internet connection."
         case .httpError(let statusCode, let message):
@@ -85,7 +89,10 @@ extension APIError: LocalizedError {
                 formatter.timeStyle = .medium
                 formatter.dateStyle = .none
                 return
-                    "You've reached the GitHub API rate limit. Your quota will reset at \(formatter.string(from: resetAt))."
+                    """
+                    You've reached the GitHub API rate limit. \
+                    Your quota will reset at \(formatter.string(from: resetAt)).
+                    """
             }
             return
                 "You've reached the GitHub API rate limit. Please wait a few minutes before trying again."

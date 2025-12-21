@@ -47,7 +47,7 @@ struct FixtureTests {
         #expect(json?["login"] as? String == "octocat")
         #expect(json?["id"] as? Int == 1)
         #expect(json?["name"] as? String == "The Octocat")
-        #expect(json?["avatar_url"] as? String != nil)
+        #expect(json?["avatar_url"] is String)
         #expect(json?["type"] as? String == "User")
     }
 
@@ -183,11 +183,11 @@ struct FixtureTests {
         // Verify unauthorized error structure
         let unauthorized = json?["unauthorized"]
         #expect(unauthorized?["message"] as? String == "Bad credentials")
-        #expect(unauthorized?["documentation_url"] as? String != nil)
+        #expect(unauthorized?["documentation_url"] is String)
 
         // Verify rate limit error structure
         let rateLimited = json?["rateLimitExceeded"]
-        #expect(rateLimited?["message"] as? String != nil)
+        #expect(rateLimited?["message"] is String)
         #expect((rateLimited?["message"] as? String)?.contains("rate limit") == true)
 
         // Verify not found error structure

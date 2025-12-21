@@ -45,8 +45,7 @@ final class MockHTTPClient: HTTPClient {
 
         // Use pre-configured response for URL if available
         if let urlString = request.url?.absoluteString,
-            let response = responses[urlString]
-        {
+            let response = responses[urlString] {
             return response
         }
 

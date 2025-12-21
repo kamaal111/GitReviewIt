@@ -21,6 +21,13 @@ final class PullRequestListContainer {
         self.openURL = openURL
     }
 
+    /// Fetches pull requests where the authenticated user's review is requested
+    ///
+    /// This method:
+    /// 1. Updates state to .loading
+    /// 2. Retrieves credentials from secure storage
+    /// 3. Fetches PRs from GitHub API
+    /// 4. Updates state to .loaded with results or .failed with error
     func loadPullRequests() async {
         loadingState = .loading
 
@@ -39,10 +46,13 @@ final class PullRequestListContainer {
         }
     }
 
+    /// Retries the pull request fetch operation
     func retry() async {
         await loadPullRequests()
     }
 
+    /// Opens the specified pull request URL in the default browser
+    /// - Parameter url: The URL to open
     func openPR(url: URL) {
         openURL(url)
     }

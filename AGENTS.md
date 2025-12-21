@@ -67,5 +67,6 @@
 
 ## Agent-Specific Notes
 - **MANDATORY**: Before completing any task that involves code changes, YOU MUST RUN `cd app && just test` to verify that the project builds and all tests pass. Fix any errors before proceeding.
+- **MANDATORY**: Run `just lint` to check for style violations and fix them before finishing your task.
 - The repository ships with Speckit prompts/templates (`.github`, `.specify`). Keep templates intact; add feature specs/plans under the provided structure when expanding the app.
 

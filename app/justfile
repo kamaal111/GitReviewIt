@@ -31,3 +31,7 @@ run: build
 # Check for syntax errors without building
 check:
     xcodebuild -project GitReviewIt.xcodeproj -scheme GitReviewIt -destination 'platform=macOS' -dry-run build
+
+# Lint the code
+lint:
+    swiftlint lint --config ../.swiftlint.yml --no-cache

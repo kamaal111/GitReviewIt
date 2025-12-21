@@ -1,6 +1,8 @@
 import SwiftUI
 
+/// A row view representing a single pull request in the list
 struct PullRequestRow: View {
+    /// The pull request to display
     let pullRequest: PullRequest
 
     private var relativeTime: String {

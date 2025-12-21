@@ -15,36 +15,36 @@ protocol HTTPClient: Sendable {
 enum HTTPError: Error, Equatable {
     /// Network connection failed
     case connectionFailed(Error)
-    
+
     /// Request timed out
     case timeout
-    
+
     /// Invalid URL
     case invalidURL
-    
+
     /// Response is not an HTTP response
     case invalidResponse
-    
+
     /// HTTP error with status code
     case httpError(statusCode: Int, data: Data?)
-    
+
     /// No data received from server
     case noData
-    
+
     /// SSL/TLS error
     case sslError(Error)
-    
+
     /// DNS lookup failed
     case dnsError
-    
+
     /// Request was cancelled
     case cancelled
-    
+
     /// Unknown network error
     case unknown(Error)
-    
+
     // MARK: - Computed Properties
-    
+
     /// Returns true if this error represents a client error (4xx)
     var isClientError: Bool {
         if case .httpError(let statusCode, _) = self {
@@ -52,7 +52,7 @@ enum HTTPError: Error, Equatable {
         }
         return false
     }
-    
+
     /// Returns true if this error represents a server error (5xx)
     var isServerError: Bool {
         if case .httpError(let statusCode, _) = self {
@@ -60,7 +60,7 @@ enum HTTPError: Error, Equatable {
         }
         return false
     }
-    
+
     /// Returns true if this error is recoverable by retrying
     var isRetryable: Bool {
         switch self {
@@ -73,9 +73,9 @@ enum HTTPError: Error, Equatable {
             return false
         }
     }
-    
+
     // MARK: - Equatable Conformance
-    
+
     static func == (lhs: HTTPError, rhs: HTTPError) -> Bool {
         switch (lhs, rhs) {
         case (.connectionFailed(let lhsError), .connectionFailed(let rhsError)):
@@ -131,7 +131,7 @@ extension HTTPError: LocalizedError {
             return "Network error: \(error.localizedDescription)"
         }
     }
-    
+
     var recoverySuggestion: String? {
         switch self {
         case .connectionFailed, .timeout, .dnsError:
@@ -156,13 +156,13 @@ extension HTTPError: LocalizedError {
 final class URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
     private let logger = Logger(subsystem: "com.gitreviewit.app", category: "HTTPClient")
-    
+
     /// Initialize with a custom URLSession (default creates standard configuration)
     /// - Parameter session: URLSession to use for requests
     init(session: URLSession = .shared) {
         self.session = session
     }
-    
+
     /// Performs an HTTP request using URLSession
     /// - Parameter request: The URLRequest to execute
     /// - Returns: Response data and HTTPURLResponse
@@ -171,7 +171,7 @@ final class URLSessionHTTPClient: HTTPClient {
         let startTime = Date()
         let method = request.httpMethod ?? "GET"
         let url = request.url?.absoluteString ?? "unknown"
-        
+
         // Log request details (excluding sensitive headers)
         var logHeaders: [String: String] = [:]
         if let headers = request.allHTTPHeaderFields {
@@ -184,43 +184,63 @@ final class URLSessionHTTPClient: HTTPClient {
                 }
             }
         }
-        
+
         logger.info("HTTP Request: \(method) \(url, privacy: .public)")
         if !logHeaders.isEmpty {
             logger.debug("Request headers: \(String(describing: logHeaders), privacy: .public)")
         }
-        
+
         do {
             let (data, response) = try await session.data(for: request)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 logger.error("Invalid response type received")
                 throw HTTPError.invalidResponse
             }
-            
+
             let duration = Date().timeIntervalSince(startTime)
             let statusCode = httpResponse.statusCode
             let dataSize = data.count
-            
-            logger.info("HTTP Response: \(method) \(url, privacy: .public) - \(statusCode) (\(String(format: "%.3f", duration))s, \(dataSize) bytes)")
-            
+
+            logger.info(
+                """
+                HTTP Response: \(method) \(url, privacy: .public) - \
+                \(statusCode) (\(String(format: "%.3f", duration))s, \(dataSize) bytes)
+                """
+            )
+
             return (data, httpResponse)
         } catch let error as HTTPError {
             let duration = Date().timeIntervalSince(startTime)
-            logger.error("HTTP Request failed: \(method) \(url, privacy: .public) - \(error.localizedDescription) (\(String(format: "%.3f", duration))s)")
+            logger.error(
+                """
+                HTTP Request failed: \(method) \(url, privacy: .public) - \
+                \(error.localizedDescription) (\(String(format: "%.3f", duration))s)
+                """
+            )
             throw error
         } catch let urlError as URLError {
             let duration = Date().timeIntervalSince(startTime)
             let mappedError = mapURLError(urlError)
-            logger.error("HTTP Request failed: \(method) \(url, privacy: .public) - \(mappedError.localizedDescription) (\(String(format: "%.3f", duration))s)")
+            logger.error(
+                """
+                HTTP Request failed: \(method) \(url, privacy: .public) - \
+                \(mappedError.localizedDescription) (\(String(format: "%.3f", duration))s)
+                """
+            )
             throw mappedError
         } catch {
             let duration = Date().timeIntervalSince(startTime)
-            logger.error("HTTP Request failed: \(method) \(url, privacy: .public) - Unknown error: \(error.localizedDescription) (\(String(format: "%.3f", duration))s)")
+            logger.error(
+                """
+                HTTP Request failed: \(method) \(url, privacy: .public) - Unknown error: \
+                \(error.localizedDescription) (\(String(format: "%.3f", duration))s)
+                """
+            )
             throw HTTPError.unknown(error)
         }
     }
-    
+
     /// Maps URLError cases to HTTPError cases
     private func mapURLError(_ error: URLError) -> HTTPError {
         switch error.code {
@@ -231,9 +251,9 @@ final class URLSessionHTTPClient: HTTPClient {
         case .badURL, .unsupportedURL:
             return .invalidURL
         case .secureConnectionFailed, .serverCertificateHasBadDate,
-             .serverCertificateUntrusted, .serverCertificateHasUnknownRoot,
-             .serverCertificateNotYetValid, .clientCertificateRejected,
-             .clientCertificateRequired:
+            .serverCertificateUntrusted, .serverCertificateHasUnknownRoot,
+            .serverCertificateNotYetValid, .clientCertificateRejected,
+            .clientCertificateRequired:
             return .sslError(error)
         case .cannotFindHost, .cannotConnectToHost, .dnsLookupFailed:
             return .dnsError

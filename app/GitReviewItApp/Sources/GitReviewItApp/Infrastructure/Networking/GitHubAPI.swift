@@ -144,8 +144,7 @@ final class GitHubAPIClient: GitHubAPI {
     }
 
     private func performSearch(query: String, credentials: GitHubCredentials) async throws
-        -> [PullRequest]
-    {
+        -> [PullRequest] {
         let baseURL = credentials.baseURL.trimmingSuffix("/")
         guard var components = URLComponents(string: "\(baseURL)/search/issues") else {
             throw APIError.invalidResponse
@@ -207,11 +206,9 @@ final class GitHubAPIClient: GitHubAPI {
             // GitHub sends X-RateLimit-Remaining: 0 when limit is exceeded
             if let remainingStr = response.value(forHTTPHeaderField: "X-RateLimit-Remaining"),
                 let remaining = Int(remainingStr),
-                remaining == 0
-            {
+                remaining == 0 {
                 if let rateLimitReset = response.value(forHTTPHeaderField: "X-RateLimit-Reset"),
-                    let timestamp = TimeInterval(rateLimitReset)
-                {
+                    let timestamp = TimeInterval(rateLimitReset) {
                     let resetDate = Date(timeIntervalSince1970: timestamp)
                     return .rateLimitExceeded(resetAt: resetDate)
                 }
@@ -244,8 +241,7 @@ final class GitHubAPIClient: GitHubAPI {
             // Check for offline status
             let nsError = underlyingError as NSError
             if nsError.domain == NSURLErrorDomain
-                && nsError.code == NSURLErrorNotConnectedToInternet
-            {
+                && nsError.code == NSURLErrorNotConnectedToInternet {
                 return .networkUnreachable
             }
             return .networkError(underlyingError)

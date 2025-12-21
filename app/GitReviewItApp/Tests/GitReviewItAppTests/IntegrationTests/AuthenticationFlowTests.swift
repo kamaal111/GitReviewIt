@@ -36,8 +36,7 @@ struct AuthenticationFlowTests {
 
     @Test
     func `Successful PAT validation stores credentials and transitions to authenticated state`()
-        async throws
-    {
+        async throws {
         // Arrange
         let (container, mockAPI, mockStorage) = makeContainer()
 
@@ -93,8 +92,7 @@ struct AuthenticationFlowTests {
 
     @Test
     func `Invalid PAT returns 401 and transitions to unauthenticated state with error`()
-        async throws
-    {
+        async throws {
         // Arrange
         let (container, mockAPI, _) = makeContainer()
 
@@ -184,8 +182,7 @@ struct AuthenticationFlowTests {
 
     @Test
     func `Multiple GitHub Enterprise instances with different baseURLs work independently`()
-        async throws
-    {
+        async throws {
         // Arrange
         let (container1, mockAPI1, mockStorage1) = makeContainer()
         let (container2, mockAPI2, mockStorage2) = makeContainer()
@@ -278,8 +275,7 @@ struct AuthenticationFlowTests {
 
     @Test
     func `Check existing credentials with expired token clears storage and stays unauthenticated`()
-        async throws
-    {
+        async throws {
         // Arrange
         let (container, mockAPI, mockStorage) = makeContainer()
 

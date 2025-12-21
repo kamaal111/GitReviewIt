@@ -15,22 +15,23 @@ struct GitHubAPIClientTests {
     }
 
     @Test
-    func `fetchReviewRequests fetches user, teams, and aggregates PRs including assignments`()
-        async throws
-    {
+    func `fetchReviewRequests fetches user, teams, and aggregates PRs including assignments`() async throws {
         // Prepare data
-        let userJSON = """
+        let userJSON = Data(
+            """
             { "login": "testuser", "id": 1 }
-            """.data(using: .utf8)!
+            """.utf8)
 
-        let teamsJSON = """
+        let teamsJSON = Data(
+            """
             [
                 { "id": 1, "name": "Team A", "slug": "team-a", "organization": { "login": "org" } }
             ]
-            """.data(using: .utf8)!
+            """.utf8)
 
         // PR for user review
-        let userPRsJSON = """
+        let userPRsJSON = Data(
+            """
             {
                 "total_count": 1,
                 "incomplete_results": false,
@@ -46,10 +47,11 @@ struct GitHubAPIClientTests {
                     }
                 ]
             }
-            """.data(using: .utf8)!
+            """.utf8)
 
         // PR for user assignment
-        let assignedPRsJSON = """
+        let assignedPRsJSON = Data(
+            """
             {
                 "total_count": 1,
                 "incomplete_results": false,
@@ -65,10 +67,11 @@ struct GitHubAPIClientTests {
                     }
                 ]
             }
-            """.data(using: .utf8)!
+            """.utf8)
 
         // PR for team review
-        let teamPRsJSON = """
+        let teamPRsJSON = Data(
+            """
             {
                 "total_count": 1,
                 "incomplete_results": false,
@@ -84,7 +87,7 @@ struct GitHubAPIClientTests {
                     }
                 ]
             }
-            """.data(using: .utf8)!
+            """.utf8)
 
         // Setup mock responses
         mockHTTPClient.setResponse(
@@ -160,18 +163,21 @@ struct GitHubAPIClientTests {
     @Test
     func `fetchReviewRequests handles deduplication`() async throws {
         // Prepare data
-        let userJSON = """
+        let userJSON = Data(
+            """
             { "login": "testuser", "id": 1 }
-            """.data(using: .utf8)!
+            """.utf8)
 
-        let teamsJSON = """
+        let teamsJSON = Data(
+            """
             [
                 { "id": 1, "name": "Team A", "slug": "team-a", "organization": { "login": "org" } }
             ]
-            """.data(using: .utf8)!
+            """.utf8)
 
         // Same PR in both searches
-        let searchResponseJSON = """
+        let searchResponseJSON = Data(
+            """
             {
                 "total_count": 1,
                 "incomplete_results": false,
@@ -187,7 +193,7 @@ struct GitHubAPIClientTests {
                     }
                 ]
             }
-            """.data(using: .utf8)!
+            """.utf8)
 
         mockHTTPClient.responseHandler = { request in
             let urlString = request.url?.absoluteString ?? ""
@@ -234,11 +240,13 @@ struct GitHubAPIClientTests {
     @Test
     func `fetchReviewRequests continues if fetching teams fails`() async throws {
         // Prepare data
-        let userJSON = """
+        let userJSON = Data(
+            """
             { "login": "testuser", "id": 1 }
-            """.data(using: .utf8)!
+            """.utf8)
 
-        let userPRsJSON = """
+        let userPRsJSON = Data(
+            """
             {
                 "total_count": 1,
                 "incomplete_results": false,
@@ -254,7 +262,7 @@ struct GitHubAPIClientTests {
                     }
                 ]
             }
-            """.data(using: .utf8)!
+            """.utf8)
 
         mockHTTPClient.responseHandler = { request in
             let urlString = request.url?.absoluteString ?? ""
@@ -286,9 +294,10 @@ struct GitHubAPIClientTests {
             if urlString.contains("assignee:testuser") {
                 // Return empty list for assignee
                 return (
-                    """
-                    { "total_count": 0, "incomplete_results": false, "items": [] }
-                    """.data(using: .utf8)!,
+                    Data(
+                        """
+                        { "total_count": 0, "incomplete_results": false, "items": [] }
+                        """.utf8),
                     HTTPURLResponse(
                         url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )

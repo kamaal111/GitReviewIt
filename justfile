@@ -9,3 +9,7 @@ build:
 # Run tests
 test:
     just app/test
+
+# Lint the code
+lint:
+    swiftlint lint --no-cache

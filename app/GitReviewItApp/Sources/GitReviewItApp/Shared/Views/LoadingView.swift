@@ -4,19 +4,19 @@ import SwiftUI
 struct LoadingView: View {
     /// Optional message to display below the loading indicator
     let message: String?
-    
+
     /// Creates a loading view with an optional message
     /// - Parameter message: Optional text to display below the spinner
     init(message: String? = nil) {
         self.message = message
     }
-    
+
     var body: some View {
         VStack(spacing: 16) {
             ProgressView()
                 .controlSize(.large)
                 .scaleEffect(1.5)
-            
+
             if let message = message {
                 Text(message)
                     .font(.body)

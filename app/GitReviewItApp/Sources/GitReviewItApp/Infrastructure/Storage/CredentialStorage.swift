@@ -7,12 +7,12 @@ protocol CredentialStorage: Sendable {
     /// - Parameter credentials: The credentials to store
     /// - Throws: CredentialStorageError if storage fails
     func store(_ credentials: GitHubCredentials) async throws
-    
+
     /// Retrieve the stored credentials from the keychain
     /// - Returns: The stored credentials, or nil if no credentials exist
     /// - Throws: CredentialStorageError if retrieval fails
     func retrieve() async throws -> GitHubCredentials?
-    
+
     /// Delete the stored credentials from the keychain
     /// - Throws: CredentialStorageError if deletion fails
     func delete() async throws
@@ -22,21 +22,21 @@ protocol CredentialStorage: Sendable {
 enum CredentialStorageError: Error, Equatable {
     /// Failed to store the credentials in the keychain
     case storeFailed(status: OSStatus)
-    
+
     /// Failed to retrieve the credentials from the keychain
     case retrieveFailed(status: OSStatus)
-    
+
     /// Failed to delete the credentials from the keychain
     case deleteFailed(status: OSStatus)
-    
+
     /// Credential data was corrupted or invalid
     case invalidData
-    
+
     /// The keychain is not available or accessible
     case keychainUnavailable
-    
+
     // MARK: - Equatable Conformance
-    
+
     static func == (lhs: CredentialStorageError, rhs: CredentialStorageError) -> Bool {
         switch (lhs, rhs) {
         case (.storeFailed(let lhsStatus), .storeFailed(let rhsStatus)):
@@ -72,7 +72,7 @@ extension CredentialStorageError: LocalizedError {
             return "Secure storage is not available on this device."
         }
     }
-    
+
     var recoverySuggestion: String? {
         switch self {
         case .storeFailed, .retrieveFailed, .deleteFailed:
@@ -93,7 +93,7 @@ final class KeychainCredentialStorage: CredentialStorage {
     private let account: String
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
-    
+
     /// Initialize with custom service and account identifiers
     /// - Parameters:
     ///   - service: Keychain service identifier (default: app bundle identifier)
@@ -105,16 +105,16 @@ final class KeychainCredentialStorage: CredentialStorage {
         self.service = service
         self.account = account
     }
-    
+
     /// Store credentials in the keychain
     func store(_ credentials: GitHubCredentials) async throws {
         guard let data = try? encoder.encode(credentials) else {
             throw CredentialStorageError.invalidData
         }
-        
+
         // First try to delete any existing credentials
         try? await delete()
-        
+
         // Create query for storing the credentials
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -123,14 +123,14 @@ final class KeychainCredentialStorage: CredentialStorage {
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock
         ]
-        
+
         let status = SecItemAdd(query as CFDictionary, nil)
-        
+
         guard status == errSecSuccess else {
             throw CredentialStorageError.storeFailed(status: status)
         }
     }
-    
+
     /// Retrieve the stored credentials from the keychain
     func retrieve() async throws -> GitHubCredentials? {
         let query: [String: Any] = [
@@ -140,29 +140,29 @@ final class KeychainCredentialStorage: CredentialStorage {
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
-        
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
+
         if status == errSecItemNotFound {
             return nil
         }
-        
+
         guard status == errSecSuccess else {
             throw CredentialStorageError.retrieveFailed(status: status)
         }
-        
+
         guard let data = result as? Data else {
             throw CredentialStorageError.invalidData
         }
-        
+
         do {
             return try decoder.decode(GitHubCredentials.self, from: data)
         } catch {
             throw CredentialStorageError.invalidData
         }
     }
-    
+
     /// Delete the stored credentials from the keychain
     func delete() async throws {
         let query: [String: Any] = [
@@ -170,9 +170,9 @@ final class KeychainCredentialStorage: CredentialStorage {
             kSecAttrService as String: service,
             kSecAttrAccount as String: account
         ]
-        
+
         let status = SecItemDelete(query as CFDictionary)
-        
+
         // Deleting a non-existent item is not an error
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw CredentialStorageError.deleteFailed(status: status)

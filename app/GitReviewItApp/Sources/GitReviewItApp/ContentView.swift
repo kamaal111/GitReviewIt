@@ -70,9 +70,9 @@ private struct PreviewGitHubAPI: GitHubAPI {
     func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
         AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
     }
-    
+
     func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
-    
+
     func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] { [] }
 }
 

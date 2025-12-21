@@ -1,9 +1,20 @@
 import SwiftUI
 
+/// View displaying a list of pull requests awaiting review
+///
+/// This view handles multiple states:
+/// - Loading: Shows a progress indicator
+/// - Empty: Shows a message when no PRs are found
+/// - Error: Shows an error message with retry button
+/// - Loaded: Shows the list of PRs
 struct PullRequestListView: View {
     @State private var container: PullRequestListContainer
     private let onLogout: () async -> Void
 
+    /// Creates a new pull request list view
+    /// - Parameters:
+    ///   - container: The state container managing PR data
+    ///   - onLogout: Closure to execute when user requests logout
     init(container: PullRequestListContainer, onLogout: @escaping () async -> Void) {
         _container = State(wrappedValue: container)
         self.onLogout = onLogout
@@ -52,13 +63,16 @@ struct PullRequestListView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: {
-                    Task {
-                        await onLogout()
+                Button(
+                    action: {
+                        Task {
+                            await onLogout()
+                        }
+                    },
+                    label: {
+                        Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
                     }
-                }) {
-                    Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
-                }
+                )
                 .accessibilityLabel("Log out")
             }
         }
