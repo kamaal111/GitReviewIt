@@ -6,12 +6,11 @@
 //
 
 import SwiftUI
+import GitReviewItApp
 
 @main
 struct GitReviewItApp: App {
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+        GitReviewItScene()
     }
 }

@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "4AA5D609-1550-42C3-B2A9-C1BC37B4E716",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:GitReviewItApp",
+        "identifier" : "GitReviewItAppTests",
+        "name" : "GitReviewItAppTests"
+      }
+    }
+  ],
+  "version" : 1
+}
