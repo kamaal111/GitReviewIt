@@ -147,16 +147,16 @@
 
 ### Implementation for User Story 3
 
-- [ ] T064 [US3] Add checkExistingCredentials() method in AuthenticationContainer
-- [ ] T065 [US3] Implement automatic credential load on app launch in AuthenticationContainer
-- [ ] T066 [US3] Add credential validation logic detecting 401 responses in GitHubAPIClient
-- [ ] T067 [US3] Implement automatic logout and return to login on invalid credentials (401) in AuthenticationContainer
-- [ ] T068 [US3] Update ContentView to call checkExistingCredentials() in .task modifier on launch
-- [ ] T069 [US3] Add navigation state management to skip login when valid credentials exist in ContentView
-- [ ] T070 [US3] Create CredentialPersistenceTests in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/CredentialPersistenceTests.swift
-- [ ] T071 [US3] Add test for app launch with valid stored credentials
-- [ ] T072 [US3] Add test for app launch with expired PAT (401 response)
-- [ ] T073 [US3] Add test for app launch with no stored credentials
+- [X] T064 [US3] Add checkExistingCredentials() method in AuthenticationContainer
+- [X] T065 [US3] Implement automatic credential load on app launch in AuthenticationContainer
+- [X] T066 [US3] Add credential validation logic detecting 401 responses in GitHubAPIClient
+- [X] T067 [US3] Implement automatic logout and return to login on invalid credentials (401) in AuthenticationContainer
+- [X] T068 [US3] Update ContentView to call checkExistingCredentials() in .task modifier on launch
+- [X] T069 [US3] Add navigation state management to skip login when valid credentials exist in ContentView
+- [X] T070 [US3] Create CredentialPersistenceTests in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/CredentialPersistenceTests.swift
+- [X] T071 [US3] Add test for app launch with valid stored credentials
+- [X] T072 [US3] Add test for app launch with expired PAT (401 response)
+- [X] T073 [US3] Add test for app launch with no stored credentials
 
 **Checkpoint**: User Story 3 complete - users stay logged in across sessions
 

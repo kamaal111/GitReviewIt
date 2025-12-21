@@ -127,7 +127,7 @@ final class AuthenticationContainer {
 // MARK: - Auth State
 
 extension AuthenticationContainer {
-    enum AuthState {
+    enum AuthState: Equatable {
         /// Initial state before checking for stored credentials
         case unknown
         case unauthenticated

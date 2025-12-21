@@ -110,14 +110,7 @@ struct AuthenticationFlowTests {
         // Assert
         #expect(!container.authState.isAuthenticated, "Container should remain unauthenticated")
         #expect(container.error != nil, "Error should be set")
-
-        if case .unauthorized = container.error {
-            // Expected error type
-        } else {
-            Issue.record(
-                "Expected unauthorized error but got: \(String(describing: container.error))")
-        }
-
+        #expect(container.error == .unauthorized, "Expected unauthorized error")
         #expect(!container.isLoading, "Loading should be false after completion")
     }
 
@@ -143,7 +136,8 @@ struct AuthenticationFlowTests {
         // Arrange
         let (container, mockAPI, _) = makeContainer()
 
-        mockAPI.fetchUserErrorToThrow = APIError.networkError(URLError(.notConnectedToInternet))
+        let networkError = URLError(.notConnectedToInternet)
+        mockAPI.fetchUserErrorToThrow = APIError.networkError(networkError)
 
         let testToken = "ghp_token"
 
@@ -154,11 +148,8 @@ struct AuthenticationFlowTests {
         #expect(!container.authState.isAuthenticated, "Container should remain unauthenticated")
         #expect(container.error != nil, "Network error should be set")
 
-        if case .networkError = container.error {
-            // Expected error type
-        } else {
-            Issue.record("Expected network error but got: \(String(describing: container.error))")
-        }
+        let expectedError = APIError.networkError(networkError)
+        #expect(container.error == expectedError, "Expected network error")
     }
 
     // MARK: - T043: Test GitHub Enterprise Custom baseURL Authentication
