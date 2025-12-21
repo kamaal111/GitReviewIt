@@ -77,8 +77,8 @@
 
 ### Shared UI Components
 
-- [ ] T031 [P] Create LoadingView in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Views/LoadingView.swift
-- [ ] T032 [P] Create ErrorView in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Views/ErrorView.swift
+- [X] T031 [P] Create LoadingView in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Views/LoadingView.swift
+- [X] T032 [P] Create ErrorView in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Views/ErrorView.swift
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
