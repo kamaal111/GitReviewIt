@@ -1,0 +1,18 @@
+[
+    {
+        "id": 1,
+        "name": "Justice League",
+        "slug": "justice-league",
+        "organization": {
+            "login": "dc"
+        }
+    },
+    {
+        "id": 2,
+        "name": "Avengers",
+        "slug": "avengers",
+        "organization": {
+            "login": "marvel"
+        }
+    }
+]

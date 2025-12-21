@@ -11,6 +11,13 @@ protocol GitHubAPI: Sendable {
     /// - Throws: APIError if request fails or token is invalid
     func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser
 
+    /// Fetches teams for the authenticated user
+    ///
+    /// - Parameter credentials: GitHub credentials (token + baseURL)
+    /// - Returns: Array of Team objects (may be empty)
+    /// - Throws: APIError if request fails
+    func fetchTeams(credentials: GitHubCredentials) async throws -> [Team]
+
     /// Fetches pull requests where the authenticated user's review is requested
     ///
     /// - Parameter credentials: GitHub credentials (token + baseURL)
@@ -64,12 +71,76 @@ final class GitHubAPIClient: GitHubAPI {
         }
     }
 
+    func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] {
+        let baseURL = credentials.baseURL.trimmingSuffix("/")
+        guard let url = URL(string: "\(baseURL)/user/teams") else {
+            throw APIError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+
+        do {
+            let (data, response) = try await httpClient.perform(request)
+
+            guard (200...299).contains(response.statusCode) else {
+                throw mapHTTPError(statusCode: response.statusCode, data: data, response: response)
+            }
+
+            return try decoder.decode([Team].self, from: data)
+        } catch let error as HTTPError {
+            throw mapHTTPErrorToAPIError(error)
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
     func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] {
         // First, fetch the authenticated user to get their username
         let user = try await fetchUser(credentials: credentials)
 
-        // Build search query for PRs where this user's review is requested
-        let query = "type:pr+state:open+review-requested:\(user.login)"
+        // Try to fetch teams, but don't fail if we can't (e.g. scopes, not in org, etc.)
+        let teams: [Team]
+        do {
+            teams = try await fetchTeams(credentials: credentials)
+        } catch {
+            // Log error if we had logging, but for now just proceed without teams
+            teams = []
+        }
+
+        // Build list of queries
+        var queries = ["type:pr+state:open+review-requested:\(user.login)"]
+        for team in teams {
+            queries.append("type:pr+state:open+team-review-requested:\(team.fullSlug)")
+        }
+
+        // Execute searches in parallel
+        return try await withThrowingTaskGroup(of: [PullRequest].self) { group in
+            for query in queries {
+                group.addTask {
+                    try await self.performSearch(query: query, credentials: credentials)
+                }
+            }
+            
+            var allPRs: [PullRequest] = []
+            for try await prs in group {
+                allPRs.append(contentsOf: prs)
+            }
+            
+            // Deduplicate by ID (which is owner/repo#number)
+            let uniquePRs = Dictionary(grouping: allPRs, by: { $0.id })
+                .compactMap { $0.value.first }
+                .sorted { $0.updatedAt > $1.updatedAt }
+                
+            return uniquePRs
+        }
+    }
+    
+    private func performSearch(query: String, credentials: GitHubCredentials) async throws -> [PullRequest] {
         let baseURL = credentials.baseURL.trimmingSuffix("/")
         guard var components = URLComponents(string: "\(baseURL)/search/issues") else {
             throw APIError.invalidResponse
@@ -92,8 +163,8 @@ final class GitHubAPIClient: GitHubAPI {
                 throw mapHTTPError(statusCode: response.statusCode, data: data, response: response)
             }
 
-            let searchResponse = try decoder.decode(GitHubSearchResponse.self, from: data)
-            return searchResponse.items
+            let searchResponse = try decoder.decode(SearchIssuesResponse.self, from: data)
+            return searchResponse.items.compactMap { self.mapSearchIssueToPullRequest($0) }
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {
@@ -101,6 +172,23 @@ final class GitHubAPIClient: GitHubAPI {
         } catch {
             throw APIError.decodingError(error)
         }
+    }
+    
+    private func mapSearchIssueToPullRequest(_ item: SearchIssueItem) -> PullRequest? {
+        guard let (owner, name) = extractRepositoryInfo(from: item.repository_url) else {
+            return nil
+        }
+        
+        return PullRequest(
+            repositoryOwner: owner,
+            repositoryName: name,
+            number: item.number,
+            title: item.title,
+            authorLogin: item.user.login,
+            authorAvatarURL: item.user.avatar_url,
+            updatedAt: item.updated_at,
+            htmlURL: item.html_url
+        )
     }
 
     // MARK: - Helper Methods
@@ -152,13 +240,18 @@ final class GitHubAPIClient: GitHubAPI {
         let components = url.pathComponents
 
         // Path components: ["", "repos", "owner", "repo"]
-        guard components.count >= 4,
-            components[1] == "repos"
-        else {
-            return nil
+        // Check for "repos" in path components to handle enterprise URLs or weird paths
+        // Typically it is [..., "repos", "owner", "repo"]
+        if let reposIndex = components.lastIndex(of: "repos"), reposIndex + 2 < components.count {
+            return (owner: components[reposIndex + 1], name: components[reposIndex + 2])
+        }
+        
+        // Fallback for standard path
+        if components.count >= 4, components[1] == "repos" {
+            return (owner: components[2], name: components[3])
         }
 
-        return (owner: components[2], name: components[3])
+        return nil
     }
 }
 
@@ -179,6 +272,7 @@ private struct GitHubErrorResponse: Decodable {
     let message: String
 }
 
+// Unused now but kept for compatibility if needed elsewhere
 private struct GitHubSearchResponse: Decodable {
     let items: [PullRequest]
 }
