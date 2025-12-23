@@ -24,6 +24,7 @@
 - Names: PascalCase for types, camelCase for variables/functions, SCREAMING_SNAKE_CASE for constants.
 - Files: One primary type per file; filename matches type name.
 - Architecture: Prefer MVVM for features; keep views declarative and business logic in view models/services.
+- Control Flow: Avoid nesting by using `guard` statements and early exits wherever possible. Each `guard` statement must hold only one condition. This improves readability and prevents linting/formatting conflicts with multi-line conditions.
 - Imports: Keep UI separated from domain logic; avoid unnecessary cross-layer dependencies.
 - **Swift Concurrency**: Project uses Swift 6 with strict concurrency checking enabled:
   - NEVER use `nonisolated(unsafe)` in production code - it disables Swift's data race safety guarantees
@@ -67,6 +68,6 @@
 
 ## Agent-Specific Notes
 - **MANDATORY**: Before completing any task that involves code changes, YOU MUST RUN `cd app && just test` to verify that the project builds and all tests pass. Fix any errors before proceeding.
-- **MANDATORY**: Run `just lint` to check for style violations and fix them before finishing your task.
+- **MANDATORY**: Run `just lint` to check for style violations and fix them before finishing your task. Ensure that `just lint` succeeds (no warnings or errors).
 - The repository ships with Speckit prompts/templates (`.github`, `.specify`). Keep templates intact; add feature specs/plans under the provided structure when expanding the app.
 

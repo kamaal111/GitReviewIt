@@ -123,7 +123,7 @@ open:
 
 # Lint the code
 lint:
-    swiftlint lint --config ../.swiftlint.yml --no-cache
+    swiftlint lint --config ../.swiftlint.yml --no-cache --strict
 
 # Bootstrap app for development
 bootstrap: install-tools

@@ -3,19 +3,14 @@ import Testing
 
 @testable import GitReviewItApp
 
-@MainActor
-struct GitHubAPIClientTests {
+@MainActor struct GitHubAPIClientTests {
     private let mockHTTPClient = MockHTTPClient()
     private let api: GitHubAPIClient
-    private let credentials = GitHubCredentials(
-        token: "test-token", baseURL: "https://api.github.com")
+    private let credentials = GitHubCredentials(token: "test-token", baseURL: "https://api.github.com")
 
-    init() {
-        self.api = GitHubAPIClient(httpClient: mockHTTPClient)
-    }
+    init() { self.api = GitHubAPIClient(httpClient: mockHTTPClient) }
 
-    @Test
-    func `fetchReviewRequests fetches user, teams, and aggregates PRs including assignments`() async throws {
+    @Test func `fetchReviewRequests aggregates PRs including assignments and reviews`() async throws {
         // Prepare data
         let userJSON = Data(
             """
@@ -89,11 +84,29 @@ struct GitHubAPIClientTests {
             }
             """.utf8)
 
+        // PR reviewed by user
+        let reviewedPRsJSON = Data(
+            """
+            {
+                "total_count": 1,
+                "incomplete_results": false,
+                "items": [
+                    {
+                        "number": 4,
+                        "title": "Reviewed PR",
+                        "html_url": "https://github.com/owner/repo/pull/4",
+                        "updated_at": "2023-01-04T00:00:00Z",
+                        "state": "open",
+                        "user": { "login": "author4" },
+                        "repository_url": "https://api.github.com/repos/owner/repo"
+                    }
+                ]
+            }
+            """.utf8)
+
         // Setup mock responses
-        mockHTTPClient.setResponse(
-            for: "https://api.github.com/user", data: userJSON, statusCode: 200)
-        mockHTTPClient.setResponse(
-            for: "https://api.github.com/user/teams", data: teamsJSON, statusCode: 200)
+        mockHTTPClient.setResponse(for: "https://api.github.com/user", data: userJSON, statusCode: 200)
+        mockHTTPClient.setResponse(for: "https://api.github.com/user/teams", data: teamsJSON, statusCode: 200)
 
         // Note: URL encoding might affect the key lookup, so we might need to be careful or use responseHandler
         // Let's use responseHandler for searches to be safe about query params
@@ -102,66 +115,61 @@ struct GitHubAPIClientTests {
 
             if urlString == "https://api.github.com/user" {
                 return (
-                    userJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    userJSON, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
             if urlString == "https://api.github.com/user/teams" {
                 return (
-                    teamsJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    teamsJSON, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
             if urlString.contains("review-requested:testuser") {
                 return (
                     userPRsJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
             if urlString.contains("assignee:testuser") {
                 return (
                     assignedPRsJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            if urlString.contains("reviewed-by:testuser") {
+                return (
+                    reviewedPRsJSON,
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
             if urlString.contains("team-review-requested:org/team-a") {
                 return (
                     teamPRsJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
             // Fallback for unexpected requests
-            return (
-                Data(),
-                HTTPURLResponse(
-                    url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!
-            )
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!)
         }
 
         // Execute
         let prs = try await api.fetchReviewRequests(credentials: credentials)
 
         // Verify
-        #expect(prs.count == 3)
+        #expect(prs.count == 4)
 
         let titles = prs.map { $0.title }.sorted()
-        #expect(titles == ["Assigned PR", "Team PR", "User PR"])
+        #expect(titles == ["Assigned PR", "Reviewed PR", "Team PR", "User PR"])
 
         // Verify requests
-        #expect(mockHTTPClient.performCallCount == 5)  // user, teams, search user, search assignee, search team
+        #expect(mockHTTPClient.performCallCount == 6)  // user, teams, user-search, assigned, reviewed, team-search
     }
 
-    @Test
-    func `fetchReviewRequests handles deduplication`() async throws {
+    @Test func `fetchReviewRequests handles deduplication`() async throws {
         // Prepare data
         let userJSON = Data(
             """
@@ -200,33 +208,24 @@ struct GitHubAPIClientTests {
 
             if urlString == "https://api.github.com/user" {
                 return (
-                    userJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    userJSON, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
             if urlString == "https://api.github.com/user/teams" {
                 return (
-                    teamsJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    teamsJSON, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
-            // Return same PR for both searches
+            // Return same PR for all searches
             if urlString.contains("/search/issues") {
                 return (
                     searchResponseJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
-            return (
-                Data(),
-                HTTPURLResponse(
-                    url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!
-            )
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!)
         }
 
         // Execute
@@ -237,8 +236,7 @@ struct GitHubAPIClientTests {
         #expect(prs.first?.title == "Shared PR")
     }
 
-    @Test
-    func `fetchReviewRequests continues if fetching teams fails`() async throws {
+    @Test func `fetchReviewRequests continues if fetching teams fails`() async throws {
         // Prepare data
         let userJSON = Data(
             """
@@ -269,45 +267,35 @@ struct GitHubAPIClientTests {
 
             if urlString == "https://api.github.com/user" {
                 return (
-                    userJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    userJSON, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
             if urlString == "https://api.github.com/user/teams" {
                 // Return 403 Forbidden for teams
                 return (
-                    Data(),
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 403, httpVersion: nil, headerFields: nil)!
+                    Data(), HTTPURLResponse(url: request.url!, statusCode: 403, httpVersion: nil, headerFields: nil)!
                 )
             }
 
             if urlString.contains("review-requested:testuser") {
                 return (
                     userPRsJSON,
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
-            if urlString.contains("assignee:testuser") {
-                // Return empty list for assignee
+            if urlString.contains("assignee:testuser") || urlString.contains("reviewed-by:testuser") {
+                // Return empty list for assignee and reviewed-by
                 return (
                     Data(
                         """
                         { "total_count": 0, "incomplete_results": false, "items": [] }
                         """.utf8),
-                    HTTPURLResponse(
-                        url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
                 )
             }
 
-            return (
-                Data(),
-                HTTPURLResponse(
-                    url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!
-            )
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!)
         }
 
         // Execute
@@ -316,7 +304,7 @@ struct GitHubAPIClientTests {
         // Verify
         #expect(prs.count == 1)
         #expect(prs.first?.title == "User PR")
-        // Should have tried to fetch teams, failed, and then proceeded with user search and assignee search
-        #expect(mockHTTPClient.performCallCount == 4)  // user, teams (failed), search user, search assignee
+        // Should fetch teams (failed), then proceed with user search, assignee search, and reviewed search
+        #expect(mockHTTPClient.performCallCount == 5)  // user, teams (failed), user-search, assigned, reviewed
     }
 }

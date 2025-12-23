@@ -45,9 +45,7 @@ final class GitHubAPIClient: GitHubAPI {
 
     func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
         let baseURL = credentials.baseURL.trimmingSuffix("/")
-        guard let url = URL(string: "\(baseURL)/user") else {
-            throw APIError.invalidResponse
-        }
+        guard let url = URL(string: "\(baseURL)/user") else { throw APIError.invalidResponse }
 
         var request = URLRequest(url: url)
         request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
@@ -73,9 +71,7 @@ final class GitHubAPIClient: GitHubAPI {
 
     func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] {
         let baseURL = credentials.baseURL.trimmingSuffix("/")
-        guard let url = URL(string: "\(baseURL)/user/teams") else {
-            throw APIError.invalidResponse
-        }
+        guard let url = URL(string: "\(baseURL)/user/teams") else { throw APIError.invalidResponse }
 
         var request = URLRequest(url: url)
         request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
@@ -116,6 +112,7 @@ final class GitHubAPIClient: GitHubAPI {
         var queries = [
             "type:pr+state:open+review-requested:\(user.login)",
             "type:pr+state:open+assignee:\(user.login)",
+            "type:pr+state:open+reviewed-by:\(user.login)",
         ]
         for team in teams {
             queries.append("type:pr+state:open+team-review-requested:\(team.fullSlug)")
@@ -143,17 +140,12 @@ final class GitHubAPIClient: GitHubAPI {
         }
     }
 
-    private func performSearch(query: String, credentials: GitHubCredentials) async throws
-        -> [PullRequest] {
+    private func performSearch(query: String, credentials: GitHubCredentials) async throws -> [PullRequest] {
         let baseURL = credentials.baseURL.trimmingSuffix("/")
-        guard var components = URLComponents(string: "\(baseURL)/search/issues") else {
-            throw APIError.invalidResponse
-        }
+        guard var components = URLComponents(string: "\(baseURL)/search/issues") else { throw APIError.invalidResponse }
         components.queryItems = [URLQueryItem(name: "q", value: query)]
 
-        guard let url = components.url else {
-            throw APIError.invalidResponse
-        }
+        guard let url = components.url else { throw APIError.invalidResponse }
 
         var request = URLRequest(url: url)
         request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
@@ -179,9 +171,7 @@ final class GitHubAPIClient: GitHubAPI {
     }
 
     private func mapSearchIssueToPullRequest(_ item: SearchIssueItem) -> PullRequest? {
-        guard let (owner, name) = extractRepositoryInfo(from: item.repository_url) else {
-            return nil
-        }
+        guard let (owner, name) = extractRepositoryInfo(from: item.repository_url) else { return nil }
 
         return PullRequest(
             repositoryOwner: owner,
@@ -204,22 +194,20 @@ final class GitHubAPIClient: GitHubAPI {
         case 403:
             // Check for rate limiting
             // GitHub sends X-RateLimit-Remaining: 0 when limit is exceeded
-            if let remainingStr = response.value(forHTTPHeaderField: "X-RateLimit-Remaining"),
-                let remaining = Int(remainingStr),
-                remaining == 0 {
-                if let rateLimitReset = response.value(forHTTPHeaderField: "X-RateLimit-Reset"),
-                    let timestamp = TimeInterval(rateLimitReset) {
-                    let resetDate = Date(timeIntervalSince1970: timestamp)
-                    return .rateLimitExceeded(resetAt: resetDate)
-                }
+            guard let remainingStr = response.value(forHTTPHeaderField: "X-RateLimit-Remaining") else {
+                return defaultForbiddenError(statusCode: statusCode, data: data)
+            }
+            guard let remaining = Int(remainingStr) else {
+                return defaultForbiddenError(statusCode: statusCode, data: data)
+            }
+            guard remaining == 0 else { return defaultForbiddenError(statusCode: statusCode, data: data) }
+            guard let rateLimitReset = response.value(forHTTPHeaderField: "X-RateLimit-Reset") else {
                 return .rateLimitExceeded(resetAt: nil)
             }
+            guard let timestamp = TimeInterval(rateLimitReset) else { return .rateLimitExceeded(resetAt: nil) }
 
-            // If not a rate limit 403, it's a permission issue
-            if let errorMessage = try? decoder.decode(GitHubErrorResponse.self, from: data) {
-                return .httpError(statusCode: statusCode, message: errorMessage.message)
-            }
-            return .httpError(statusCode: statusCode, message: "Access forbidden")
+            let resetDate = Date(timeIntervalSince1970: timestamp)
+            return .rateLimitExceeded(resetAt: resetDate)
         case 404:
             return .notFound
         case 422:
@@ -235,13 +223,20 @@ final class GitHubAPIClient: GitHubAPI {
         }
     }
 
+    private func defaultForbiddenError(statusCode: Int, data: Data) -> APIError {
+        // If not a rate limit 403, it's a permission issue
+        if let errorMessage = try? decoder.decode(GitHubErrorResponse.self, from: data) {
+            return .httpError(statusCode: statusCode, message: errorMessage.message)
+        }
+        return .httpError(statusCode: statusCode, message: "Access forbidden")
+    }
+
     private func mapHTTPErrorToAPIError(_ error: HTTPError) -> APIError {
         switch error {
         case .connectionFailed(let underlyingError):
             // Check for offline status
             let nsError = underlyingError as NSError
-            if nsError.domain == NSURLErrorDomain
-                && nsError.code == NSURLErrorNotConnectedToInternet {
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorNotConnectedToInternet {
                 return .networkUnreachable
             }
             return .networkError(underlyingError)
