@@ -110,12 +110,12 @@ final class GitHubAPIClient: GitHubAPI {
 
         // Build list of queries
         var queries = [
-            "type:pr+state:open+review-requested:\(user.login)",
-            "type:pr+state:open+assignee:\(user.login)",
-            "type:pr+state:open+reviewed-by:\(user.login)",
+            "type:pr+state:open+review-requested:\(user.login)+-author:\(user.login)",
+            "type:pr+state:open+assignee:\(user.login)+-author:\(user.login)",
+            "type:pr+state:open+reviewed-by:\(user.login)+-author:\(user.login)",
         ]
         for team in teams {
-            queries.append("type:pr+state:open+team-review-requested:\(team.fullSlug)")
+            queries.append("type:pr+state:open+team-review-requested:\(team.fullSlug)+-author:\(user.login)")
         }
 
         // Execute searches in parallel
