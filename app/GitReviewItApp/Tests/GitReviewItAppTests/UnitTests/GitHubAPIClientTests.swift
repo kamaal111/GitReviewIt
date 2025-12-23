@@ -20,7 +20,7 @@ import Testing
         let teamsJSON = Data(
             """
             [
-                { "id": 1, "name": "Team A", "slug": "team-a", "organization": { "login": "org" } }
+                { "name": "Team A", "slug": "team-a", "organizationLogin": "org", "repositories": [] }
             ]
             """.utf8)
 
@@ -179,7 +179,7 @@ import Testing
         let teamsJSON = Data(
             """
             [
-                { "id": 1, "name": "Team A", "slug": "team-a", "organization": { "login": "org" } }
+                { "name": "Team A", "slug": "team-a", "organizationLogin": "org", "repositories": [] }
             ]
             """.utf8)
 

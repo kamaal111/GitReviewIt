@@ -22,8 +22,8 @@
 
 **Purpose**: Project initialization and directory structure
 
-- [ ] T001 Verify branch 002-pr-filtering is checked out
-- [ ] T002 Verify existing PR list feature (001-github-pr-viewer) is complete and functional
+- [x] T001 Verify branch 002-pr-filtering is checked out
+- [x] T002 Verify existing PR list feature (001-github-pr-viewer) is complete and functional
 
 **Checkpoint**: Infrastructure verified - foundational work can begin
 
@@ -35,15 +35,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] Create StringSimilarity utility with levenshteinDistance and similarityScore functions in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Utilities/StringSimilarity.swift
-- [ ] T004 [P] Create StringSimilarity unit tests in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/StringSimilarityTests.swift
-- [ ] T005 [P] Define FilterPersistence protocol in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterPersistence.swift
-- [ ] T006 [P] Define FuzzyMatcherProtocol in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FuzzyMatcher.swift
-- [ ] T007 [P] Define FilterEngineProtocol in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterEngine.swift
-- [ ] T008 [P] Create Team model in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Models/Team.swift
-- [ ] T009 [P] Create FilterConfiguration model in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/FilterConfiguration.swift
-- [ ] T010 [P] Create FilterMetadata model with static from(pullRequests:) method in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/FilterMetadata.swift
-- [ ] T011 Run foundational tests to verify all protocols and models compile and pass unit tests
+- [x] T003 [P] Create StringSimilarity utility with levenshteinDistance and similarityScore functions in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Utilities/StringSimilarity.swift
+- [x] T004 [P] Create StringSimilarity unit tests in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/StringSimilarityTests.swift
+- [x] T005 [P] Define FilterPersistence protocol in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterPersistence.swift
+- [x] T006 [P] Define FuzzyMatcherProtocol in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FuzzyMatcher.swift
+- [x] T007 [P] Define FilterEngineProtocol in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterEngine.swift
+- [x] T008 [P] Create Team model in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Models/Team.swift
+- [x] T009 [P] Create FilterConfiguration model in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/FilterConfiguration.swift
+- [x] T010 [P] Create FilterMetadata model with static from(pullRequests:) method in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/FilterMetadata.swift
+- [x] T011 Run foundational tests to verify all protocols and models compile and pass unit tests
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

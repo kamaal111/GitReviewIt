@@ -1,3 +1,10 @@
+//
+//  TeamTests.swift
+//  GitReviewItApp
+//
+//  Created by Kamaal M Farah on 23/12/2025.
+//
+
 import Foundation
 import Testing
 
@@ -5,24 +12,27 @@ import Testing
 
 struct TeamTests {
     @Test
-    func `Team fixture decodes correctly`() throws {
-        let url = Bundle.module.url(forResource: "teams-response", withExtension: "json")!
-        let data = try Data(contentsOf: url)
+    func `Team decodes correctly`() throws {
+        let json = Data("""
+        [
+            {
+                "slug": "justice-league",
+                "name": "Justice League",
+                "organizationLogin": "dc",
+                "repositories": ["batmobile", "watchtower"]
+            }
+        ]
+        """.utf8)
 
-        let teams = try JSONDecoder().decode([Team].self, from: data)
+        let teams = try JSONDecoder().decode([Team].self, from: json)
 
-        #expect(teams.count == 2)
+        #expect(teams.count == 1)
 
         let justiceLeague = teams[0]
         #expect(justiceLeague.name == "Justice League")
         #expect(justiceLeague.slug == "justice-league")
-        #expect(justiceLeague.organization.login == "dc")
+        #expect(justiceLeague.organizationLogin == "dc")
         #expect(justiceLeague.fullSlug == "dc/justice-league")
-
-        let avengers = teams[1]
-        #expect(avengers.name == "Avengers")
-        #expect(avengers.slug == "avengers")
-        #expect(avengers.organization.login == "marvel")
-        #expect(avengers.fullSlug == "marvel/avengers")
+        #expect(justiceLeague.repositories == ["batmobile", "watchtower"])
     }
 }
