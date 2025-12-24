@@ -35,7 +35,8 @@ PullRequestListContainer (@Observable)
 FilterState (@Observable)
     ├─ configuration: FilterConfiguration (persisted)
     ├─ metadata: FilterMetadata (derived from PRs)
-    ├─ searchQuery: String (transient)
+    ├─ searchQuery: String (immediate UI binding)
+    ├─ debouncedSearchQuery: String (delayed for filtering)
     └─ dependencies: FilterPersistence, FuzzyMatcher
 
 FilterEngine (pure logic)
@@ -91,12 +92,12 @@ Follow this order to minimize coupling and enable incremental testing:
 8. **FilterState** (`Features/PullRequests/State/FilterState.swift`)
    - Create @Observable class
    - Implement all intent methods
-   - Add debouncing for search query
+   - Add debouncing logic (split `searchQuery` vs `debouncedSearchQuery`)
    - Integration test persistence + debouncing
 
 9. **Extend PullRequestListContainer** (`Features/PullRequests/State/PullRequestListContainer.swift`)
    - Add filterState property
-   - Add filteredPullRequests computed property
+   - Add filteredPullRequests computed property (use `debouncedSearchQuery`)
    - Call FilterEngine to compute filtered results
    - Integration test filtering scenarios
 

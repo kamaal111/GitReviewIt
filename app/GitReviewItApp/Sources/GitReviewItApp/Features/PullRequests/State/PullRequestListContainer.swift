@@ -35,7 +35,7 @@ final class PullRequestListContainer {
         guard case .loaded(let allPRs) = loadingState else { return [] }
         return filterEngine.apply(
             configuration: filterState.configuration,
-            searchQuery: filterState.searchQuery,
+            searchQuery: filterState.debouncedSearchQuery,
             to: allPRs,
             teamMetadata: filterState.metadata.teams.value ?? []
         )

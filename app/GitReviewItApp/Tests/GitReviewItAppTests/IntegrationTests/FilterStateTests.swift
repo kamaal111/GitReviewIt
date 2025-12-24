@@ -20,18 +20,20 @@ struct FilterStateTests {
         let state = FilterState(persistence: persistence, timeProvider: FakeTimeProvider())
 
         // Initial state
-        #expect(state.searchQuery.isEmpty)
+        #expect(state.debouncedSearchQuery.isEmpty)
 
         // Update query
         state.updateSearchQuery("swift")
 
-        // Should not update immediately (task scheduled but not awaited)
-        #expect(state.searchQuery.isEmpty)
+        // Should update UI immediately
+        #expect(state.searchQuery == "swift")
+        // But not debounced query
+        #expect(state.debouncedSearchQuery.isEmpty)
 
         // Await the search task completion
         await state.awaitSearchCompletion()
 
-        #expect(state.searchQuery == "swift")
+        #expect(state.debouncedSearchQuery == "swift")
     }
 
     @Test
@@ -49,7 +51,7 @@ struct FilterStateTests {
         await state.awaitSearchCompletion()
 
         // Should be "swift", not "swif"
-        #expect(state.searchQuery == "swift")
+        #expect(state.debouncedSearchQuery == "swift")
     }
 
     @Test
@@ -59,9 +61,10 @@ struct FilterStateTests {
 
         state.updateSearchQuery("something")
         await state.awaitSearchCompletion()
-        #expect(state.searchQuery == "something")
+        #expect(state.debouncedSearchQuery == "something")
 
         state.clearSearchQuery()
         #expect(state.searchQuery.isEmpty)
+        #expect(state.debouncedSearchQuery.isEmpty)
     }
 }

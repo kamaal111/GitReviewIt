@@ -45,6 +45,7 @@ struct FilterSheet: View {
             HStack {
                 Text("Filter Pull Requests")
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
             }
             .padding()
@@ -60,6 +61,7 @@ struct FilterSheet: View {
                             Text("Organizations")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
+                                .accessibilityAddTraits(.isHeader)
 
                             ForEach(metadata.sortedOrganizations, id: \.self) { org in
                                 Toggle(
@@ -84,6 +86,7 @@ struct FilterSheet: View {
                                 ) {
                                     Text(org)
                                 }
+                                .accessibilityLabel("Filter by organization \(org)")
                             }
                         }
                     }
@@ -94,6 +97,7 @@ struct FilterSheet: View {
                             Text("Repositories")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
+                                .accessibilityAddTraits(.isHeader)
 
                             ForEach(metadata.sortedRepositories, id: \.self) { repo in
                                 Toggle(
@@ -114,6 +118,7 @@ struct FilterSheet: View {
                                 ) {
                                     Text(repo)
                                 }
+                                .accessibilityLabel("Filter by repository \(repo)")
                             }
                         }
                     }
@@ -135,6 +140,7 @@ struct FilterSheet: View {
                     onClearAll()
                 }
                 .disabled(selectedOrganizations.isEmpty && selectedRepositories.isEmpty && selectedTeams.isEmpty)
+                .accessibilityHint("Removes all active filters")
 
                 Spacer()
 
@@ -142,6 +148,7 @@ struct FilterSheet: View {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
+                .accessibilityHint("Dismisses the filter sheet without applying changes")
 
                 Button("Apply") {
                     let newConfiguration = FilterConfiguration(
@@ -153,6 +160,7 @@ struct FilterSheet: View {
                     onApply(newConfiguration)
                 }
                 .keyboardShortcut(.defaultAction)
+                .accessibilityHint("Applies the selected filters")
             }
             .padding()
         }
@@ -165,12 +173,14 @@ struct FilterSheet: View {
             Text("Teams")
                 .font(.subheadline)
                 .fontWeight(.semibold)
+                .accessibilityAddTraits(.isHeader)
 
             switch metadata.teams {
             case .idle:
                 Text("Loading teams...")
                     .foregroundStyle(.secondary)
                     .font(.caption)
+                    .accessibilityLabel("Waiting to load teams")
             case .loading:
                 HStack {
                     ProgressView()
@@ -179,11 +189,14 @@ struct FilterSheet: View {
                         .foregroundStyle(.secondary)
                         .font(.caption)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Loading teams")
             case .loaded(let teams):
                 if teams.isEmpty {
                     Text("No teams available")
                         .foregroundStyle(.secondary)
                         .font(.caption)
+                        .accessibilityLabel("No teams found")
                 } else {
                     ForEach(teams.sorted(by: { $0.name < $1.name })) { team in
                         Toggle(
@@ -205,6 +218,7 @@ struct FilterSheet: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .accessibilityLabel("Filter by team \(team.name) from \(team.organizationLogin)")
                     }
                 }
             case .failed(let error):
@@ -217,6 +231,8 @@ struct FilterSheet: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Team filtering unavailable: \(teamUnavailableMessage(for: error))")
             }
         }
     }

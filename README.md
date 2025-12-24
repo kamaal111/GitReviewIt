@@ -7,6 +7,12 @@ GitReviewIt is a native macOS application built with SwiftUI that helps develope
 - **Personal Access Token Authentication**: Securely log in using GitHub PATs.
 - **GitHub Enterprise Support**: Configurable API base URL for self-hosted GitHub instances.
 - **Review Dashboard**: View a list of all Pull Requests where your review has been requested.
+- **PR Filtering**: Find PRs quickly with powerful filtering capabilities:
+  - **Fuzzy Search**: Search by PR title, repository name, or author with intelligent ranking
+  - **Organization Filter**: Filter by GitHub organization (persistent)
+  - **Repository Filter**: Filter by specific repositories (persistent)
+  - **Team Filter**: Filter by GitHub teams (when available with proper permissions)
+  - **Combined Filtering**: Use search and structured filters together for precise results
 - **Secure Storage**: Credentials are stored safely in the macOS Keychain.
 - **Native Experience**: Built with SwiftUI for a fast, responsive macOS interface.
 - **Direct Access**: Open PRs directly in your default browser with a single click.
@@ -43,8 +49,20 @@ GitReviewIt is a native macOS application built with SwiftUI that helps develope
    - Enter your GitHub Personal Access Token (PAT).
    - (Optional) Enter your GitHub Enterprise API URL if not using GitHub.com.
 3. **View PRs**: Once authenticated, the app will display a list of PRs awaiting your review.
-4. **Refresh**: The list refreshes automatically on launch.
-5. **Open PR**: Click any PR in the list to open it in your browser.
+4. **Filter PRs**:
+   - **Search**: Type in the search box to find PRs by title, repository, or author. Results update as you type with intelligent ranking.
+   - **Structured Filters**: Click the Filter button to open the filter sheet:
+     - Select organizations to show only PRs from those orgs
+     - Select repositories to narrow down to specific repos
+     - Select teams (if available) to filter by team repositories
+   - **Active Filters**: View and remove active filters using the filter chips displayed above the PR list.
+   - **Clear All**: Use "Clear Filters" or "Clear All" to reset your selections.
+5. **Refresh**: The list refreshes automatically on launch.
+6. **Open PR**: Click any PR in the list to open it in your browser.
+
+### Filter Persistence
+
+Structured filters (organization, repository, team) are automatically saved and restored when you relaunch the app. Search queries are transient and do not persist across sessions.
 
 ## Development
 
