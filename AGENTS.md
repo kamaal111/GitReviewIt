@@ -28,6 +28,7 @@
 - Imports: Keep UI separated from domain logic; avoid unnecessary cross-layer dependencies.
 - **Swift Concurrency**: Project uses Swift 6 with strict concurrency checking enabled:
   - NEVER use `nonisolated(unsafe)` in production code - it disables Swift's data race safety guarantees
+  - NEVER use `@unchecked Sendable` in production code. Use actors or proper isolation instead.
   - Use proper actor isolation (`@MainActor`, `actor`) to protect shared mutable state
   - For UI components and AppKit/UIKit types, use `@MainActor` since they must run on the main thread
   - Mark protocols with `Sendable` when they cross actor boundaries

@@ -27,24 +27,54 @@ struct PullRequestListView: View {
                 LoadingView()
                     .accessibilityLabel("Loading pull requests")
             case .loaded(let prs):
-                if prs.isEmpty {
-                    ContentUnavailableView(
-                        "No Pull Requests",
-                        systemImage: "checkmark.circle",
-                        description: Text("You have no pull requests awaiting your review.")
+                VStack(spacing: 0) {
+                    TextField(
+                        "Search pull requests",
+                        text: Binding(
+                            get: { container.filterState.searchQuery },
+                            set: { container.filterState.updateSearchQuery($0) }
+                        )
                     )
-                    .accessibilityLabel("No pull requests found")
-                } else {
-                    List(prs) { pr in
-                        PullRequestRow(pullRequest: pr)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                container.openPR(url: pr.htmlURL)
+                    .textFieldStyle(.roundedBorder)
+                    .padding()
+
+                    if container.filteredPullRequests.isEmpty {
+                        if !prs.isEmpty {
+                            ContentUnavailableView.search(text: container.filterState.searchQuery)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else {
+                            ContentUnavailableView(
+                                "No Pull Requests",
+                                systemImage: "checkmark.circle",
+                                description: Text("You have no pull requests awaiting your review.")
+                            )
+                            .accessibilityLabel("No pull requests found")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    } else {
+                        ScrollViewReader { proxy in
+                            List(container.filteredPullRequests) { pr in
+                                PullRequestRow(pullRequest: pr)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        container.openPR(url: pr.htmlURL)
+                                    }
+                                    .accessibilityHint("Double tap to open in browser")
+                                    .id(pr.id)
                             }
-                            .accessibilityHint("Double tap to open in browser")
-                    }
-                    .refreshable {
-                        await container.loadPullRequests()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .refreshable {
+                                await container.loadPullRequests()
+                            }
+                            .onChange(of: container.filteredPullRequests.count) { oldCount, newCount in
+                                guard newCount > oldCount else { return }
+                                guard let firstPR = container.filteredPullRequests.first else { return }
+
+                                withAnimation {
+                                    proxy.scrollTo(firstPR.id, anchor: .top)
+                                }
+                            }
+                        }
                     }
                 }
             case .failed(let error):

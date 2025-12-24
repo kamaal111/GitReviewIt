@@ -65,17 +65,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Implement FuzzyMatcher service with match method (weighted scoring: title 3.0x, repo 2.0x, author 1.5x) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FuzzyMatcher.swift
-- [ ] T013 [P] [US1] Create FuzzyMatcher unit tests covering exact, prefix, substring, fuzzy matches, tie-breaking by PR number in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FuzzyMatcherTests.swift
-- [ ] T014 [US1] Implement FilterEngine service with apply method (two-stage pipeline: structured filters then fuzzy search) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterEngine.swift
-- [ ] T015 [P] [US1] Create FilterEngine unit tests covering fuzzy search scenarios in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FilterEngineTests.swift
-- [ ] T016 [US1] Create FilterState observable state container with searchQuery property and updateSearchQuery method (300ms debouncing) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
-- [ ] T017 [US1] Integrate FilterState into PullRequestListContainer with filteredPullRequests computed property in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/PullRequestListContainer.swift
-- [ ] T018 [US1] Add search TextField to PullRequestListView bound to filterState.searchQuery in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
-- [ ] T019 [US1] Update PullRequestListView List to use container.filteredPullRequests instead of all PRs in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
-- [ ] T020 [US1] Add empty state message for zero search results in PullRequestListView
-- [ ] T021 [US1] Create integration tests for search debouncing and filtering in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/FilterStateTests.swift
-- [ ] T022 [US1] Manual test: Verify search works, debouncing feels responsive, results ranked correctly, clear works, search doesn't persist on relaunch
+- [x] T012 [P] [US1] Implement FuzzyMatcher service with match method (weighted scoring: title 3.0x, repo 2.0x, author 1.5x) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FuzzyMatcher.swift
+- [x] T013 [P] [US1] Create FuzzyMatcher unit tests covering exact, prefix, substring, fuzzy matches, tie-breaking by PR number in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FuzzyMatcherTests.swift
+- [x] T014 [US1] Implement FilterEngine service with apply method (two-stage pipeline: structured filters then fuzzy search) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterEngine.swift
+- [x] T015 [P] [US1] Create FilterEngine unit tests covering fuzzy search scenarios in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FilterEngineTests.swift
+- [x] T016 [US1] Create FilterState observable state container with searchQuery property and updateSearchQuery method (300ms debouncing) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
+- [x] T017 [US1] Integrate FilterState into PullRequestListContainer with filteredPullRequests computed property in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/PullRequestListContainer.swift
+- [x] T018 [US1] Add search TextField to PullRequestListView bound to filterState.searchQuery in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
+- [x] T019 [US1] Update PullRequestListView List to use container.filteredPullRequests instead of all PRs in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
+- [x] T020 [US1] Add empty state message for zero search results in PullRequestListView
+- [x] T021 [US1] Create integration tests for search debouncing and filtering in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/FilterStateTests.swift
+- [x] T022 [US1] Manual test: Verify search works, debouncing feels responsive, results ranked correctly, clear works, search doesn't persist on relaunch
 
 **Checkpoint**: User Story 1 complete - fuzzy search fully functional and independently testable
 

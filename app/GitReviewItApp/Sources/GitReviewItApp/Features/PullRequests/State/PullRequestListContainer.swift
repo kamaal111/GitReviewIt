@@ -6,19 +6,34 @@ import Observation
 @MainActor
 final class PullRequestListContainer {
     private(set) var loadingState: LoadingState<[PullRequest]> = .idle
+    private(set) var filterState: FilterState
 
     private let githubAPI: GitHubAPI
     private let credentialStorage: CredentialStorage
     private let openURL: (URL) -> Void
+    private let filterEngine: FilterEngineProtocol
 
     init(
         githubAPI: GitHubAPI,
         credentialStorage: CredentialStorage,
+        filterEngine: FilterEngineProtocol = FilterEngine(),
         openURL: @escaping (URL) -> Void = { NSWorkspace.shared.open($0) }
     ) {
         self.githubAPI = githubAPI
         self.credentialStorage = credentialStorage
         self.openURL = openURL
+        self.filterEngine = filterEngine
+        self.filterState = FilterState(persistence: UserDefaultsFilterPersistence())
+    }
+
+    var filteredPullRequests: [PullRequest] {
+        guard case .loaded(let allPRs) = loadingState else { return [] }
+        return filterEngine.apply(
+            configuration: filterState.configuration,
+            searchQuery: filterState.searchQuery,
+            to: allPRs,
+            teamMetadata: []
+        )
     }
 
     /// Fetches pull requests where the authenticated user's review is requested
