@@ -61,6 +61,7 @@ private struct FilterChip: View {
             }
             .buttonStyle(.plain)
             .help("Remove filter")
+            .accessibilityLabel("Remove filter for \(title)")
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)

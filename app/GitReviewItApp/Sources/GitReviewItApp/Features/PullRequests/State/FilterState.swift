@@ -9,25 +9,85 @@ import OSLog
 import Observation
 import SwiftUI
 
+/// Observable state container for PR filtering and search.
+///
+/// **Responsibilities**:
+/// - Manages search query with 300ms debouncing
+/// - Manages structured filter configuration (org, repo, team)
+/// - Persists filter configuration across app launches
+/// - Manages filter metadata (available options)
+/// - Handles team API errors with graceful degradation
+///
+/// **State properties**:
+/// - `searchQuery`: Current search text (debounced by 300ms)
+/// - `configuration`: Active structured filters (org, repo, team)
+/// - `metadata`: Available filter options extracted from PRs
+/// - `errorMessage`: User-facing error message (nil if no error)
+///
+/// **Usage**:
+/// ```swift
+/// @State private var filterState = FilterState(
+///     persistence: UserDefaultsFilterPersistence(),
+///     timeProvider: RealTimeProvider()
+/// )
+///
+/// // Load persisted filters on app launch
+/// await filterState.loadPersistedConfiguration()
+///
+/// // Update search (debounced)
+/// filterState.updateSearchQuery("fix bug")
+///
+/// // Update structured filters (persisted)
+/// await filterState.updateFilterConfiguration(newConfig)
+/// ```
+///
+/// - Note: All methods must be called from MainActor context.
 @Observable
 @MainActor
 final class FilterState {
+    /// Current search query string (updated immediately for UI binding)
     private(set) var searchQuery: String = ""
+
+    /// Debounced search query string (used for actual filtering)
+    private(set) var debouncedSearchQuery: String = ""
+
+    /// Active structured filter configuration (persisted)
     private(set) var configuration: FilterConfiguration = .empty
+
+    /// Available filter options (extracted from PR list and GitHub API)
     private(set) var metadata: FilterMetadata = FilterMetadata(organizations: [], repositories: [], teams: .idle)
+
+    /// Current user-facing error message, or nil if no error
     private(set) var errorMessage: String?
+
     private let persistence: FilterPersistence
     private let timeProvider: TimeProvider
     private let logger = Logger(subsystem: "com.gitreviewit.app", category: "FilterState")
 
+    /// Active debounce task for search query updates
     private var searchTask: Task<Void, Never>?
 
+    /// Initializes filter state with dependencies.
+    ///
+    /// - Parameters:
+    ///   - persistence: Service for saving/loading filter configuration
+    ///   - timeProvider: Time provider for debouncing (injectable for testing)
     init(persistence: FilterPersistence, timeProvider: TimeProvider = RealTimeProvider()) {
         self.persistence = persistence
         self.timeProvider = timeProvider
     }
 
+    /// Updates the search query with 300ms debouncing.
+    ///
+    /// Cancels any pending search updates and schedules a new update after 300ms.
+    /// This prevents excessive filtering during rapid typing.
+    ///
+    /// - Parameter query: The new search query string
+    ///
+    /// - Note: The query property is updated immediately for UI binding,
+    ///         but filtering occurs after the debounce delay.
     func updateSearchQuery(_ query: String) {
+        self.searchQuery = query
         searchTask?.cancel()
         searchTask = Task {
             do {
@@ -37,14 +97,18 @@ final class FilterState {
             }
 
             guard !Task.isCancelled else { return }
-            self.searchQuery = query
+            self.debouncedSearchQuery = query
         }
     }
 
+    /// Clears the search query immediately.
+    ///
+    /// Cancels any pending debounced updates and resets the query to empty string.
     func clearSearchQuery() {
         searchTask?.cancel()
         searchTask = nil
         searchQuery = ""
+        debouncedSearchQuery = ""
     }
 
     /// Await completion of any pending search query update. For testing purposes.
@@ -52,6 +116,12 @@ final class FilterState {
         await searchTask?.value
     }
 
+    /// Updates and persists the filter configuration.
+    ///
+    /// Saves the configuration to persistent storage and updates the UI state.
+    /// If persistence fails, sets an error message but keeps the UI state updated.
+    ///
+    /// - Parameter newConfiguration: The new filter configuration to apply
     func updateFilterConfiguration(_ newConfiguration: FilterConfiguration) async {
         configuration = newConfiguration
         do {
@@ -62,6 +132,10 @@ final class FilterState {
         }
     }
 
+    /// Loads persisted filter configuration from storage.
+    ///
+    /// Should be called on app launch to restore user's previous filter selections.
+    /// If loading fails (e.g., corrupted data), clears the storage and sets an error message.
     func loadPersistedConfiguration() async {
         do {
             if let loaded = try await persistence.load() {
@@ -76,6 +150,10 @@ final class FilterState {
         }
     }
 
+    /// Clears all active filters and removes persisted configuration.
+    ///
+    /// Resets configuration to empty state and clears storage.
+    /// If clearing storage fails, sets an error message.
     func clearAllFilters() async {
         configuration = .empty
         do {
@@ -86,14 +164,35 @@ final class FilterState {
         }
     }
 
+    /// Dismisses the current error message.
     func clearError() {
         errorMessage = nil
     }
 
+    /// Updates filter metadata from pull request list (organizations and repositories only).
+    ///
+    /// Extracts unique organizations and repositories from the PR list.
+    /// Sets teams to idle state (use `updateMetadata(from:api:credentials:)` to fetch teams).
+    ///
+    /// - Parameter pullRequests: The list of PRs to extract metadata from
     func updateMetadata(from pullRequests: [PullRequest]) {
         metadata = FilterMetadata.from(pullRequests: pullRequests)
     }
 
+    /// Updates filter metadata from PRs and fetches team data from GitHub API.
+    ///
+    /// First extracts organizations and repositories from PRs, then asynchronously
+    /// fetches team data from GitHub. Updates UI progressively:
+    /// 1. Immediately sets orgs/repos with teams in loading state
+    /// 2. Updates teams to loaded/failed state when API call completes
+    ///
+    /// If team API fails with 403 (permission denied) or other errors, gracefully
+    /// degrades to failed state and clears any invalid team filters from configuration.
+    ///
+    /// - Parameters:
+    ///   - pullRequests: The list of PRs to extract metadata from
+    ///   - api: GitHub API client for fetching teams
+    ///   - credentials: User's GitHub credentials
     func updateMetadata(
         from pullRequests: [PullRequest],
         api: GitHubAPI,
@@ -143,6 +242,10 @@ final class FilterState {
         }
     }
 
+    /// Removes team filters from configuration when team data is unavailable.
+    ///
+    /// Called automatically when team API fails. Persists the updated configuration
+    /// without team filters, so invalid selections don't persist across app restarts.
     private func clearInvalidTeamFilters() async {
         guard
             !configuration.selectedTeams.isEmpty
