@@ -97,22 +97,22 @@
 
 ### Implementation for User Story 2
 
-- [ ] T023 [P] [US2] Implement UserDefaultsFilterPersistence service with save, load, clear methods in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterPersistence.swift
-- [ ] T024 [P] [US2] Create FilterPersistence unit tests covering save/load round-trip, missing data, corrupted data in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FilterPersistenceTests.swift
-- [ ] T025 [US2] Add organization and repository filtering logic to FilterEngine (Stage 1 of pipeline) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterEngine.swift
-- [ ] T026 [P] [US2] Add FilterEngine unit tests for organization filter, repository filter, combined filters in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FilterEngineTests.swift
-- [ ] T027 [US2] Add configuration property and updateFilterConfiguration method to FilterState in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
-- [ ] T028 [US2] Add loadPersistedConfiguration and clearAllFilters methods to FilterState in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
-- [ ] T029 [US2] Initialize FilterState with persistence service and call loadPersistedConfiguration in PullRequestListContainer in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/PullRequestListContainer.swift
-- [ ] T030 [US2] Create FilterSheet view with organization and repository sections (multi-select toggles) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/FilterSheet.swift
-- [ ] T031 [US2] Add Apply, Cancel, and Clear All buttons to FilterSheet in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/FilterSheet.swift
-- [ ] T032 [US2] Create FilterChipsView to display active filters as dismissible chips in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/FilterChipsView.swift
-- [ ] T033 [US2] Add Filter toolbar button to PullRequestListView that presents FilterSheet in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
-- [ ] T034 [US2] Add FilterChipsView above PR list in PullRequestListView (only visible when filters active) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
-- [ ] T035 [US2] Add empty state message for zero filter results with "Clear Filters" action in PullRequestListView
-- [ ] T036 [US2] Create integration tests for filter persistence across launches in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/FilterRestoreTests.swift
-- [ ] T037 [US2] Create integration tests for organization and repository filtering in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRFilteringTests.swift
-- [ ] T038 [US2] Manual test: Verify filters work, persist across restarts, chips display/remove correctly, empty states show correct messages
+- [x] T023 [P] [US2] Implement UserDefaultsFilterPersistence service with save, load, clear methods in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterPersistence.swift
+- [x] T024 [P] [US2] Create FilterPersistence unit tests covering save/load round-trip, missing data, corrupted data in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FilterPersistenceTests.swift
+- [x] T025 [US2] Add organization and repository filtering logic to FilterEngine (Stage 1 of pipeline) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Services/FilterEngine.swift
+- [x] T026 [P] [US2] Add FilterEngine unit tests for organization filter, repository filter, combined filters in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/FilterEngineTests.swift
+- [x] T027 [US2] Add configuration property and updateFilterConfiguration method to FilterState in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
+- [x] T028 [US2] Add loadPersistedConfiguration and clearAllFilters methods to FilterState in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
+- [x] T029 [US2] Initialize FilterState with persistence service and call loadPersistedConfiguration in PullRequestListContainer in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/PullRequestListContainer.swift
+- [x] T030 [US2] Create FilterSheet view with organization and repository sections (multi-select toggles) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/FilterSheet.swift
+- [x] T031 [US2] Add Apply, Cancel, and Clear All buttons to FilterSheet in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/FilterSheet.swift
+- [x] T032 [US2] Create FilterChipsView to display active filters as dismissible chips in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/FilterChipsView.swift
+- [x] T033 [US2] Add Filter toolbar button to PullRequestListView that presents FilterSheet in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
+- [x] T034 [US2] Add FilterChipsView above PR list in PullRequestListView (only visible when filters active) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
+- [x] T035 [US2] Add empty state message for zero filter results with "Clear Filters" action in PullRequestListView
+- [x] T036 [US2] Create integration tests for filter persistence across launches in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/FilterRestoreTests.swift
+- [x] T037 [US2] Create integration tests for organization and repository filtering in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRFilteringTests.swift
+- [x] T038 [US2] Manual test: Verify filters work, persist across restarts, chips display/remove correctly, empty states show correct messages
 
 **Checkpoint**: User Story 2 complete - organization and repository filtering fully functional with persistence
 
@@ -168,11 +168,11 @@
 
 ### Implementation for User Story 4
 
-- [ ] T053 [US4] Verify FilterEngine.apply combines structured filters and fuzzy search correctly (already implemented in T014)
-- [ ] T054 [P] [US4] Add integration tests for combined search and filter scenarios in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRFilteringTests.swift
-- [ ] T055 [US4] Update empty state message in PullRequestListView to distinguish "search and filters" vs "search only" vs "filters only" in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
-- [ ] T056 [US4] Add clearSearchQuery method to FilterState and wire to UI in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift
-- [ ] T057 [US4] Manual test: Verify search + filter combinations work, clearing search leaves filters, clearing filters leaves search, empty states accurate
+- [x] T053 [US4] Verify FilterEngine.apply combines structured filters and fuzzy search correctly (already implemented in T014)
+- [x] T054 [P] [US4] Add integration tests for combined search and filter scenarios in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRFilteringTests.swift
+- [x] T055 [US4] Update empty state message in PullRequestListView to distinguish "search and filters" vs "search only" vs "filters only" in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestListView.swift
+- [x] T056 [US4] Add clearSearchQuery method to FilterState and wire to UI in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/State/FilterState.swift (already implemented in T020)
+- [x] T057 [US4] Manual test: Verify search + filter combinations work, clearing search leaves filters, clearing filters leaves search, empty states accurate
 
 **Checkpoint**: User Story 4 complete - all filtering features integrated and working together
 
@@ -191,8 +191,8 @@
 - [ ] T064 Update README.md with PR filtering feature description and screenshots
 - [ ] T065 Review all error messages for clarity and actionability
 - [ ] T066 Final manual testing pass: All user scenarios from spec.md
-- [ ] T067 Run just test to verify all tests pass
-- [ ] T068 Run just lint to verify code style compliance
+- [x] T067 Run just test to verify all tests pass
+- [x] T068 Run just lint to verify code style compliance
 - [ ] T069 Validate quickstart.md implementation sequence matches actual implementation
 
 **Checkpoint**: Feature complete, tested, documented, and ready for review

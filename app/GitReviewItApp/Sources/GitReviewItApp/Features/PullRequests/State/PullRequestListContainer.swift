@@ -24,6 +24,11 @@ final class PullRequestListContainer {
         self.openURL = openURL
         self.filterEngine = filterEngine
         self.filterState = FilterState(persistence: UserDefaultsFilterPersistence())
+
+        // Load persisted filters
+        Task {
+            await self.filterState.loadPersistedConfiguration()
+        }
     }
 
     var filteredPullRequests: [PullRequest] {
@@ -54,6 +59,7 @@ final class PullRequestListContainer {
 
             let pullRequests = try await githubAPI.fetchReviewRequests(credentials: credentials)
             loadingState = .loaded(pullRequests)
+            filterState.updateMetadata(from: pullRequests)
         } catch let error as APIError {
             loadingState = .failed(error)
         } catch {
