@@ -26,6 +26,11 @@
 - Architecture: Prefer MVVM for features; keep views declarative and business logic in view models/services.
 - Control Flow: Avoid nesting by using `guard` statements and early exits wherever possible. Each `guard` statement must hold only one condition. This improves readability and prevents linting/formatting conflicts with multi-line conditions.
 - Imports: Keep UI separated from domain logic; avoid unnecessary cross-layer dependencies.
+- **Logging**: NEVER use `print()` statements in production code. Use `OSLog` with `Logger` for all logging:
+  - Import `OSLog` at the top of the file
+  - Create a logger: `private let logger = Logger(subsystem: "com.gitreviewit.app", category: "YourCategory")`
+  - Use appropriate log levels: `logger.debug()`, `logger.info()`, `logger.warning()`, `logger.error()`, `logger.fault()`
+  - Example: `logger.error("Failed to save configuration: \(error.localizedDescription)")`
 - **Swift Concurrency**: Project uses Swift 6 with strict concurrency checking enabled:
   - NEVER use `nonisolated(unsafe)` in production code - it disables Swift's data race safety guarantees
   - NEVER use `@unchecked Sendable` in production code. Use actors or proper isolation instead.
@@ -70,5 +75,6 @@
 ## Agent-Specific Notes
 - **MANDATORY**: Before completing any task that involves code changes, YOU MUST RUN `cd app && just test` to verify that the project builds and all tests pass. Fix any errors before proceeding.
 - **MANDATORY**: Run `just lint` to check for style violations and fix them before finishing your task. Ensure that `just lint` succeeds (no warnings or errors).
+- **CRITICAL - NEVER USE CAT/HEREDOC**: NEVER use `cat > file << 'EOF'` or any heredoc syntax to create or edit files. This consistently crashes terminals, corrupts files, and creates broken code. ALWAYS use `create_file` or `replace_string_in_file` tools instead. This is a hard rule with no exceptions.
 - The repository ships with Speckit prompts/templates (`.github`, `.specify`). Keep templates intact; add feature specs/plans under the provided structure when expanding the app.
 

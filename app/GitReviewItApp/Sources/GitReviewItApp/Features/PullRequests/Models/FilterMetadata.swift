@@ -27,7 +27,7 @@ struct FilterMetadata {
 
     static func from(pullRequests: [PullRequest]) -> FilterMetadata {
         let organizations = Set(pullRequests.map { $0.repositoryOwner })
-        let repositories = Set(pullRequests.map { $0.repositoryName })
+        let repositories = Set(pullRequests.map { $0.repositoryFullName })
         return FilterMetadata(
             organizations: organizations,
             repositories: repositories,
