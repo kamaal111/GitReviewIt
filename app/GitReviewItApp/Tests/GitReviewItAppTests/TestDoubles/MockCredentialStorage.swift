@@ -20,6 +20,12 @@ final class MockCredentialStorage: CredentialStorage {
     /// Error to throw on delete operations
     var deleteErrorToThrow: CredentialStorageError?
 
+    // MARK: - Initializer
+
+    init(mockCredentials: GitHubCredentials? = nil) {
+        self.storedCredentials = mockCredentials
+    }
+
     // MARK: - Captured Data
 
     /// Count of how many times store was called

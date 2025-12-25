@@ -591,6 +591,107 @@ struct PRFilteringTests {
         #expect(!owners.contains("CompanyB"))
     }
 
+    // MARK: - Preview Metadata Compatibility
+
+    @Test
+    func `Filtering works correctly with preview metadata enabled`() {
+        let metadata = PRPreviewMetadata(
+            additions: 100,
+            deletions: 50,
+            changedFiles: 5,
+            requestedReviewers: [Reviewer(login: "reviewer1", avatarURL: nil)],
+            completedReviewers: []
+        )
+
+        var pr1 = makePR(owner: "CompanyA", repo: "Repo1")
+        pr1.previewMetadata = metadata
+
+        var pr2 = makePR(owner: "CompanyB", repo: "Repo2")
+        pr2.previewMetadata = metadata
+
+        var pr3 = makePR(owner: "CompanyA", repo: "Repo3")
+        pr3.previewMetadata = nil
+
+        let config = FilterConfiguration(
+            version: 1,
+            selectedOrganizations: ["CompanyA"],
+            selectedRepositories: [],
+            selectedTeams: []
+        )
+
+        let result = engine.apply(
+            configuration: config,
+            searchQuery: "",
+            to: [pr1, pr2, pr3],
+            teamMetadata: []
+        )
+
+        #expect(result.count == 2)
+        #expect(result.allSatisfy { $0.repositoryOwner == "CompanyA" })
+        #expect(result.contains(where: { $0.previewMetadata != nil }))
+        #expect(result.contains(where: { $0.previewMetadata == nil }))
+    }
+
+    @Test
+    func `PRs can be sorted by updatedAt with preview metadata enabled`() {
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: now)!
+        let twoDaysAgo = Calendar.current.date(byAdding: .day, value: -2, to: now)!
+
+        let metadata = PRPreviewMetadata(
+            additions: 100,
+            deletions: 50,
+            changedFiles: 5,
+            requestedReviewers: [],
+            completedReviewers: []
+        )
+
+        var pr1 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "Oldest PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: twoDaysAgo,
+            htmlURL: url
+        )
+        pr1.previewMetadata = metadata
+
+        var pr2 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 2,
+            title: "Middle PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: yesterday,
+            htmlURL: url
+        )
+        pr2.previewMetadata = nil
+
+        var pr3 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 3,
+            title: "Newest PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: now,
+            htmlURL: url
+        )
+        pr3.previewMetadata = metadata
+
+        let prs = [pr1, pr2, pr3]
+        let sorted = prs.sorted { $0.updatedAt > $1.updatedAt }
+
+        #expect(sorted[0].title == "Newest PR")
+        #expect(sorted[1].title == "Middle PR")
+        #expect(sorted[2].title == "Oldest PR")
+        #expect(sorted[0].previewMetadata != nil)
+        #expect(sorted[1].previewMetadata == nil)
+        #expect(sorted[2].previewMetadata != nil)
+    }
+
     // MARK: - Helper
 
     private func makePR(

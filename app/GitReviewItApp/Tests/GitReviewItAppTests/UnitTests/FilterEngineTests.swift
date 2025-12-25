@@ -219,6 +219,37 @@ struct FilterEngineTests {
         #expect(result.first?.title == "Fix bug")
     }
 
+    @Test
+    func `Search works correctly with preview metadata enabled`() {
+        let metadata = PRPreviewMetadata(
+            additions: 100,
+            deletions: 50,
+            changedFiles: 5,
+            requestedReviewers: [],
+            completedReviewers: []
+        )
+
+        var pr1 = makePR(title: "Fix authentication bug")
+        pr1.previewMetadata = metadata
+
+        var pr2 = makePR(title: "Add dashboard feature")
+        pr2.previewMetadata = nil
+
+        var pr3 = makePR(title: "Fix navigation issue")
+        pr3.previewMetadata = metadata
+
+        let result = engine.apply(
+            configuration: .empty,
+            searchQuery: "Fix",
+            to: [pr1, pr2, pr3],
+            teamMetadata: []
+        )
+
+        #expect(result.count == 2)
+        #expect(result.allSatisfy { $0.title.contains("Fix") })
+        #expect(result.contains(where: { $0.previewMetadata != nil }))
+    }
+
     // Helper
     private func makePR(
         owner: String = "owner",

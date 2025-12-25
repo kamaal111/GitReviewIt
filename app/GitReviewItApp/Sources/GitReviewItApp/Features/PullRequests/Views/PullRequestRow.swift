@@ -6,6 +6,8 @@ struct PullRequestRow: View {
     let pullRequest: PullRequest
     /// The login name of the currently authenticated user
     let currentUserLogin: String
+    /// Indicates whether metadata enrichment is currently in progress
+    let isEnrichingMetadata: Bool
 
     private var relativeTime: String {
         let formatter = RelativeDateTimeFormatter()
@@ -51,12 +53,21 @@ struct PullRequestRow: View {
 
                 Spacer()
 
-                PreviewMetadataView(
-                    previewMetadata: pullRequest.previewMetadata,
-                    commentCount: pullRequest.commentCount,
-                    labels: pullRequest.labels,
-                    currentUserLogin: currentUserLogin
-                )
+                HStack(spacing: 4) {
+                    // Loading indicator when metadata enrichment is in progress and metadata not yet loaded
+                    if isEnrichingMetadata && pullRequest.previewMetadata == nil {
+                        ProgressView()
+                            .controlSize(.small)
+                            .accessibilityLabel("Loading metadata")
+                    }
+
+                    PreviewMetadataView(
+                        previewMetadata: pullRequest.previewMetadata,
+                        commentCount: pullRequest.commentCount,
+                        labels: pullRequest.labels,
+                        currentUserLogin: currentUserLogin
+                    )
+                }
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Created by \(pullRequest.authorLogin), \(relativeTime)")
@@ -78,6 +89,7 @@ struct PullRequestRow: View {
         htmlURL: URL(string: "https://github.com/kamaal111/GitReviewIt/pull/1")!
     )
     return List {
-        PullRequestRow(pullRequest: pr, currentUserLogin: "kamaal111")
+        PullRequestRow(pullRequest: pr, currentUserLogin: "kamaal111", isEnrichingMetadata: true)
+        PullRequestRow(pullRequest: pr, currentUserLogin: "kamaal111", isEnrichingMetadata: false)
     }
 }

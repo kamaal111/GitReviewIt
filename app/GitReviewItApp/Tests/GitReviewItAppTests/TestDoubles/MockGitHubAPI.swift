@@ -41,6 +41,9 @@ final class MockGitHubAPI: GitHubAPI {
         set { prDetailsToReturn = newValue }
     }
 
+    /// Mock responses per PR (keyed by "owner/repo#number") - allows individual success/failure
+    var mockPRDetailsResponses: [String: Result<PRPreviewMetadata, Error>] = [:]
+
     /// Set of PR IDs that should fail when fetching details
     var shouldFailPRDetails: Set<String> = []
 
@@ -153,6 +156,16 @@ final class MockGitHubAPI: GitHubAPI {
 
         let key = "\(owner)/\(repo)#\(number)"
 
+        // Check for per-PR mock responses first
+        if let mockResponse = mockPRDetailsResponses[key] {
+            switch mockResponse {
+            case .success(let metadata):
+                return metadata
+            case .failure(let error):
+                throw error
+            }
+        }
+
         // Check if this PR should fail
         if shouldFailPRDetails.contains(key) {
             throw APIError.notFound
@@ -168,7 +181,8 @@ final class MockGitHubAPI: GitHubAPI {
                 additions: 10,
                 deletions: 5,
                 changedFiles: 2,
-                requestedReviewers: []
+                requestedReviewers: [],
+                completedReviewers: []
             )
         }
 
@@ -205,6 +219,7 @@ final class MockGitHubAPI: GitHubAPI {
         fetchTeamsCredentials.removeAll()
         fetchReviewRequestsCredentials.removeAll()
         prDetailsToReturn.removeAll()
+        mockPRDetailsResponses.removeAll()
         fetchPRDetailsErrorToThrow = nil
         fetchPRDetailsRequests.removeAll()
         shouldFailPRDetails.removeAll()

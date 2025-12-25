@@ -7,11 +7,28 @@
 
 import SwiftUI
 
+/// A sheet view for configuring pull request filters.
+///
+/// Allows users to filter PRs by:
+/// - Organization
+/// - Repository
+/// - Team (if available)
+///
+/// The sheet manages its own local state and only applies changes when the "Apply" button is pressed.
 struct FilterSheet: View {
+    /// Metadata containing available filter options (orgs, repos, teams)
     let metadata: FilterMetadata
+
+    /// The currently active filter configuration
     let currentConfiguration: FilterConfiguration
+
+    /// Callback when user applies changes
     let onApply: (FilterConfiguration) -> Void
+
+    /// Callback when user cancels changes
     let onCancel: () -> Void
+
+    /// Callback when user clears all filters
     let onClearAll: () -> Void
 
     @State private var selectedOrganizations: Set<String>
@@ -20,6 +37,13 @@ struct FilterSheet: View {
 
     private let syncService: FilterSyncService
 
+    /// Creates a new filter sheet.
+    /// - Parameters:
+    ///   - metadata: Available filter options
+    ///   - currentConfiguration: Current filter settings
+    ///   - onApply: Action to perform on apply
+    ///   - onCancel: Action to perform on cancel
+    ///   - onClearAll: Action to perform on clear all
     init(
         metadata: FilterMetadata,
         currentConfiguration: FilterConfiguration,
@@ -262,7 +286,7 @@ struct FilterSheet: View {
         repositories: ["CompanyA/backend", "CompanyB/frontend", "PersonalOrg/hobby"],
         teams: .loaded([
             Team(slug: "backend-team", name: "Backend Team", organizationLogin: "CompanyA", repositories: []),
-            Team(slug: "frontend-team", name: "Frontend Team", organizationLogin: "CompanyB", repositories: [])
+            Team(slug: "frontend-team", name: "Frontend Team", organizationLogin: "CompanyB", repositories: []),
         ])
     )
 

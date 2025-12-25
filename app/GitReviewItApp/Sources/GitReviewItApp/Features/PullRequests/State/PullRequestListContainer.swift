@@ -1,13 +1,16 @@
 import AppKit
 import Foundation
-import Observation
 import OSLog
+import Observation
 
 @Observable
 @MainActor
 final class PullRequestListContainer {
     private(set) var loadingState: LoadingState<[PullRequest]> = .idle
     private(set) var filterState: FilterState
+
+    /// Indicates whether metadata enrichment is currently in progress
+    private(set) var isEnrichingMetadata: Bool = false
 
     private let githubAPI: GitHubAPI
     private let credentialStorage: CredentialStorage
@@ -108,6 +111,9 @@ final class PullRequestListContainer {
     ///   - credentials: GitHub credentials for API access
     func enrichPreviewMetadata(for pullRequests: [PullRequest], credentials: GitHubCredentials) async {
         guard case .loaded(var prs) = loadingState else { return }
+
+        isEnrichingMetadata = true
+        defer { isEnrichingMetadata = false }
 
         logger.info("Starting metadata enrichment for \(pullRequests.count) PRs")
 

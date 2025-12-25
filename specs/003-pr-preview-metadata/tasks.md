@@ -137,21 +137,21 @@ All foundational models and infrastructure that multiple user stories depend on.
 
 **Purpose**: Improvements that affect multiple user stories, final quality checks
 
-- [ ] T048 [P] Add loading indicators for metadata enrichment while keeping list responsive in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift
-- [ ] T049 [P] Verify filtering functionality works with preview metadata enabled in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/FilteringTests.swift
-- [ ] T050 [P] Verify searching functionality works with preview metadata enabled in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/SearchTests.swift
-- [ ] T051 [P] Verify sorting functionality works with preview metadata enabled in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/SortingTests.swift
-- [ ] T052 [P] Add performance test for PR list load time with 50 PRs (<3s requirement) in app/GitReviewItApp/Tests/GitReviewItAppTests/PerformanceTests/PreviewMetadataPerformanceTests.swift
-- [ ] T052 [P] Add error handling test for rate limit scenarios in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/ErrorHandlingTests.swift
-- [ ] T053 [P] Verify graceful degradation when individual PR metadata fails in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/ErrorHandlingTests.swift
-- [ ] T054 [P] Add documentation comments to all public APIs in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/
-- [ ] T055 Run just build and verify project compiles successfully
-- [ ] T056 Run just test and verify all tests pass
-- [ ] T057 Run just lint and verify no style violations
-- [ ] T058 Manual testing: Load PR list and verify all metadata displays correctly
-- [ ] T059 Manual testing: Test with GitHub Enterprise custom base URL
-- [ ] T060 Manual testing: Test rate limit handling by simulating limit exceeded
-- [ ] T061 Manual testing: Test accessibility with VoiceOver enabled
+- [X] T048 [P] Add loading indicators for metadata enrichment while keeping list responsive in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift
+- [X] T049 [P] Verify filtering functionality works with preview metadata enabled in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/FilteringTests.swift
+- [X] T050 [P] Verify searching functionality works with preview metadata enabled in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/SearchTests.swift
+- [X] T051 [P] Verify sorting functionality works with preview metadata enabled in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/SortingTests.swift
+- [X] T052 [P] Add performance test for PR list load time with 50 PRs (<3s requirement) in app/GitReviewItApp/Tests/GitReviewItAppTests/PerformanceTests/PreviewMetadataPerformanceTests.swift
+- [X] T052 [P] Add error handling test for rate limit scenarios in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/ErrorHandlingTests.swift
+- [X] T053 [P] Verify graceful degradation when individual PR metadata fails in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/ErrorHandlingTests.swift
+- [X] T054 [P] Add documentation comments to all public APIs in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/
+- [X] T055 Run just build and verify project compiles successfully
+- [X] T056 Run just test and verify all tests pass
+- [X] T057 Run just lint and verify no style violations
+- [x] T058 Manual testing: Load PR list and verify all metadata displays correctly
+- [x] T059 Manual testing: Test with GitHub Enterprise custom base URL
+- [x] T060 Manual testing: Test rate limit handling by simulating limit exceeded
+- [x] T061 Manual testing: Test accessibility with VoiceOver enabled
 
 ---
 
