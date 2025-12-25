@@ -142,6 +142,7 @@ struct PullRequestListView: View {
                         Label("Refresh", systemImage: "arrow.clockwise")
                     }
                 )
+                .keyboardShortcut("r", modifiers: .command)
                 .accessibilityLabel("Refresh pull requests")
                 .disabled(container.loadingState == .loading)
             }
