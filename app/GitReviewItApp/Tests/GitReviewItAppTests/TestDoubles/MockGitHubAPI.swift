@@ -56,6 +56,12 @@ final class MockGitHubAPI: GitHubAPI {
     /// Error to throw from fetchPRReviews
     var fetchPRReviewsErrorToThrow: Error?
 
+    /// Check runs to return from fetchCheckRuns (keyed by "owner/repo@ref")
+    var checkRunsToReturn: [String: CheckRunsResponse] = [:]
+
+    /// Error to throw from fetchCheckRuns
+    var fetchCheckRunsErrorToThrow: Error?
+
     /// Convenience property for counting PR details fetches
     var prDetailsFetchCount: Int {
         fetchPRDetailsCallCount
@@ -80,6 +86,10 @@ final class MockGitHubAPI: GitHubAPI {
     private(set) var fetchPRReviewsRequests:
         [(owner: String, repo: String, number: Int, credentials: GitHubCredentials)] = []
 
+    /// Check runs requests captured (owner, repo, ref, credentials)
+    private(set) var fetchCheckRunsRequests:
+        [(owner: String, repo: String, ref: String, credentials: GitHubCredentials)] = []
+
     /// Count of how many times fetchUser was called
     var fetchUserCallCount: Int {
         fetchUserCredentials.count
@@ -103,6 +113,11 @@ final class MockGitHubAPI: GitHubAPI {
     /// Count of how many times fetchPRReviews was called
     var fetchPRReviewsCallCount: Int {
         fetchPRReviewsRequests.count
+    }
+
+    /// Count of how many times fetchCheckRuns was called
+    var fetchCheckRunsCallCount: Int {
+        fetchCheckRunsRequests.count
     }
 
     // MARK: - GitHubAPI Protocol
@@ -205,6 +220,27 @@ final class MockGitHubAPI: GitHubAPI {
         return prReviewsToReturn[key] ?? []
     }
 
+    func fetchCheckRuns(
+        owner: String,
+        repo: String,
+        ref: String,
+        credentials: GitHubCredentials
+    ) async throws -> CheckRunsResponse {
+        fetchCheckRunsRequests.append((owner, repo, ref, credentials))
+
+        if let error = fetchCheckRunsErrorToThrow {
+            throw error
+        }
+
+        let key = "\(owner)/\(repo)@\(ref)"
+        if let checkRuns = checkRunsToReturn[key] {
+            return checkRuns
+        }
+
+        // Return default empty response if not configured
+        return CheckRunsResponse(total_count: 0, check_runs: [])
+    }
+
     // MARK: - Test Helpers
 
     /// Reset all captured data and configuration
@@ -226,6 +262,9 @@ final class MockGitHubAPI: GitHubAPI {
         prReviewsToReturn.removeAll()
         fetchPRReviewsErrorToThrow = nil
         fetchPRReviewsRequests.removeAll()
+        checkRunsToReturn.removeAll()
+        fetchCheckRunsErrorToThrow = nil
+        fetchCheckRunsRequests.removeAll()
     }
 
     /// Get the last credentials used for fetchUser

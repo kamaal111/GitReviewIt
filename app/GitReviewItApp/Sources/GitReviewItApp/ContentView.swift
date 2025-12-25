@@ -103,6 +103,15 @@ struct ContentView: View {
         ) async throws -> [PRReviewResponse] {
             []
         }
+
+        func fetchCheckRuns(
+            owner: String,
+            repo: String,
+            ref: String,
+            credentials: GitHubCredentials
+        ) async throws -> CheckRunsResponse {
+            CheckRunsResponse(total_count: 0, check_runs: [])
+        }
     }
 
     private struct PreviewCredentialStorage: CredentialStorage {

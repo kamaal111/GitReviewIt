@@ -38,12 +38,12 @@
 
 **Goal**: Users can see if a PR has merge conflicts.
 
-- [ ] T017 [US3] Create `PRMergeStatus` enum in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
-- [ ] T018 [US3] Update `PRPreviewMetadata` to include `mergeStatus` in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
-- [ ] T019 [US3] Update `PRDetailsResponse` to decode `mergeable` fields in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift`
-- [ ] T020 [US3] Update `toPRPreviewMetadata` mapping logic in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift`
-- [ ] T021 [US3] Add integration tests for merge status in `app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift`
-- [ ] T022 [US3] Update `PullRequestRow` to display merge status in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
+- [X] T017 [US3] Create `PRMergeStatus` enum in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
+- [X] T018 [US3] Update `PRPreviewMetadata` to include `mergeStatus` in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
+- [X] T019 [US3] Update `PRDetailsResponse` to decode `mergeable` fields in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift`
+- [X] T020 [US3] Update `toPRPreviewMetadata` mapping logic in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift`
+- [X] T021 [US3] Add integration tests for merge status in `app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift`
+- [X] T022 [US3] Update `PullRequestRow` to display merge status in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
 
 ## Phase 5: User Story 4 - Graceful Degradation (P2)
 

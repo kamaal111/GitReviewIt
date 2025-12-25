@@ -3,6 +3,37 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.gitreviewit.app", category: "PRPreviewMetadata")
 
+/// Represents the aggregated status of CI/CD checks for a pull request
+///
+/// **States**:
+/// - `passing`: All checks completed successfully
+/// - `failing`: One or more checks failed, timed out, or require action
+/// - `pending`: One or more checks are in progress or queued
+/// - `unknown`: No checks configured or status unavailable
+///
+/// **Usage**:
+/// ```swift
+/// let status = PRCheckStatus.passing
+/// ```
+enum PRCheckStatus: String, Codable, Sendable {
+    case passing
+    case failing
+    case pending
+    case unknown
+}
+
+/// Represents the mergeability status of a pull request
+///
+/// **States**:
+/// - `mergeable`: No conflicts, ready to merge
+/// - `conflicting`: Merge conflicts detected
+/// - `unknown`: Mergeability status not yet computed or unavailable
+enum PRMergeStatus: String, Codable, Sendable {
+    case mergeable
+    case conflicting
+    case unknown
+}
+
 /// Container for asynchronously-loaded preview metadata from GitHub PR Details API
 ///
 /// This model contains change statistics and reviewer information that requires
@@ -42,6 +73,8 @@ struct PRPreviewMetadata: Equatable, Sendable {
     let changedFiles: Int
     let requestedReviewers: [Reviewer]
     let completedReviewers: [Reviewer]
+    let checkStatus: PRCheckStatus
+    let mergeStatus: PRMergeStatus
 
     /// Creates new preview metadata with validation
     ///
@@ -51,6 +84,8 @@ struct PRPreviewMetadata: Equatable, Sendable {
     ///   - changedFiles: Number of files modified (must be >= 0)
     ///   - requestedReviewers: List of requested reviewers (empty array if none)
     ///   - completedReviewers: List of reviewers who have completed reviews (empty array if none)
+    ///   - checkStatus: CI/CD check status (defaults to .unknown)
+    ///   - mergeStatus: Mergeability status (defaults to .unknown)
     ///
     /// - Precondition: All count fields must be non-negative
     init(
@@ -58,7 +93,9 @@ struct PRPreviewMetadata: Equatable, Sendable {
         deletions: Int,
         changedFiles: Int,
         requestedReviewers: [Reviewer],
-        completedReviewers: [Reviewer] = []
+        completedReviewers: [Reviewer] = [],
+        checkStatus: PRCheckStatus = .unknown,
+        mergeStatus: PRMergeStatus = .unknown
     ) {
         guard additions >= 0 else {
             preconditionFailure("additions must be non-negative, got: \(additions)")
@@ -77,12 +114,15 @@ struct PRPreviewMetadata: Equatable, Sendable {
         self.changedFiles = changedFiles
         self.requestedReviewers = requestedReviewers
         self.completedReviewers = completedReviewers
+        self.checkStatus = checkStatus
+        self.mergeStatus = mergeStatus
 
         logger.debug(
             """
             Created PRPreviewMetadata: +\(additions) -\(deletions) \
             ~\(changedFiles) files, \(requestedReviewers.count) requested, \
-            \(completedReviewers.count) completed
+            \(completedReviewers.count) completed, checks: \(checkStatus.rawValue), \
+            merge: \(mergeStatus.rawValue)
             """
         )
     }

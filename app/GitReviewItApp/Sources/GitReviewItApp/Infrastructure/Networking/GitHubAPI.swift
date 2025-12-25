@@ -56,6 +56,22 @@ protocol GitHubAPI: Sendable {
         number: Int,
         credentials: GitHubCredentials
     ) async throws -> [PRReviewResponse]
+
+    /// Fetches check runs for a specific Git reference (commit SHA)
+    ///
+    /// - Parameters:
+    ///   - owner: Repository owner username
+    ///   - repo: Repository name
+    ///   - ref: Git reference (commit SHA, branch name, or tag)
+    ///   - credentials: GitHub credentials (token + baseURL)
+    /// - Returns: CheckRunsResponse with check run status and details
+    /// - Throws: APIError if request fails
+    func fetchCheckRuns(
+        owner: String,
+        repo: String,
+        ref: String,
+        credentials: GitHubCredentials
+    ) async throws -> CheckRunsResponse
 }
 
 // MARK: - GitHubAPIClient
@@ -208,15 +224,26 @@ final class GitHubAPIClient: GitHubAPI {
 
             let detailsResponse = try decoder.decode(PRDetailsResponse.self, from: data)
 
-            // Fetch reviews in parallel
-            let reviews = try await fetchPRReviews(
+            // Fetch reviews and check runs in parallel
+            async let reviews = fetchPRReviews(
                 owner: owner,
                 repo: repo,
                 number: number,
                 credentials: credentials
             )
 
-            return detailsResponse.toPRPreviewMetadata(reviews: reviews)
+            async let checkRuns = fetchCheckRuns(
+                owner: owner,
+                repo: repo,
+                ref: detailsResponse.head.sha,
+                credentials: credentials
+            )
+
+            // Await both parallel requests
+            let (reviewsResult, checkRunsResult) = try await (reviews, checkRuns)
+            let checkStatus = checkRunsResult.aggregatedStatus
+
+            return detailsResponse.toPRPreviewMetadata(reviews: reviewsResult, checkStatus: checkStatus)
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {
@@ -250,6 +277,39 @@ final class GitHubAPIClient: GitHubAPI {
             }
 
             return try decoder.decode([PRReviewResponse].self, from: data)
+        } catch let error as HTTPError {
+            throw mapHTTPErrorToAPIError(error)
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func fetchCheckRuns(
+        owner: String,
+        repo: String,
+        ref: String,
+        credentials: GitHubCredentials
+    ) async throws -> CheckRunsResponse {
+        let baseURL = credentials.baseURL.trimmingSuffix("/")
+        guard let url = URL(string: "\(baseURL)/repos/\(owner)/\(repo)/commits/\(ref)/check-runs") else {
+            throw APIError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+
+        do {
+            let (data, response) = try await httpClient.perform(request)
+
+            guard (200...299).contains(response.statusCode) else {
+                throw mapHTTPError(statusCode: response.statusCode, data: data, response: response)
+            }
+
+            return try decoder.decode(CheckRunsResponse.self, from: data)
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {

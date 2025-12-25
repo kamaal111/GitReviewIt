@@ -50,6 +50,16 @@ struct PreviewMetadataView: View {
                 accessibilityLabel: commentsAccessibilityLabel
             )
 
+            // Check status (only show if metadata is loaded)
+            if let checkStatus = previewMetadata?.checkStatus {
+                checkStatusView(status: checkStatus)
+            }
+
+            // Merge status (only show if metadata is loaded)
+            if let mergeStatus = previewMetadata?.mergeStatus {
+                mergeStatusView(status: mergeStatus)
+            }
+
             // Reviewers (all reviewers - both requested and completed)
             if let reviewers = previewMetadata?.allReviewers, !reviewers.isEmpty {
                 reviewersView(reviewers: reviewers)
@@ -92,6 +102,71 @@ struct PreviewMetadataView: View {
                 .foregroundStyle(.secondary)
         }
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    /// Creates a view displaying CI/CD check status
+    ///
+    /// - Parameter status: The check status to display
+    /// - Returns: A view displaying the check status indicator
+    @ViewBuilder
+    private func checkStatusView(status: PRCheckStatus) -> some View {
+        let (icon, color, label) = checkStatusAttributes(status: status)
+
+        HStack(spacing: 2) {
+            Text(icon)
+            Text(label)
+                .foregroundStyle(color)
+        }
+        .accessibilityLabel(checkStatusAccessibilityLabel(status: status))
+    }
+
+    /// Returns display attributes for a check status
+    ///
+    /// - Parameter status: The check status
+    /// - Returns: Tuple of (icon, color, label)
+    private func checkStatusAttributes(status: PRCheckStatus) -> (String, Color, String) {
+        switch status {
+        case .passing:
+            return ("✓", .green, "CI")
+        case .failing:
+            return ("✗", .red, "CI")
+        case .pending:
+            return ("○", .orange, "CI")
+        case .unknown:
+            return ("", .secondary, "")
+        }
+    }
+
+    /// Creates a view displaying mergeability status
+    ///
+    /// - Parameter status: The merge status to display
+    /// - Returns: A view displaying the merge status indicator
+    @ViewBuilder
+    private func mergeStatusView(status: PRMergeStatus) -> some View {
+        let (icon, color, label) = mergeStatusAttributes(status: status)
+
+        HStack(spacing: 2) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+            Text("Merge")
+                .foregroundStyle(color)
+        }
+        .accessibilityLabel(label)
+    }
+
+    /// Returns display attributes for a merge status
+    ///
+    /// - Parameter status: The merge status
+    /// - Returns: Tuple of (icon, color, label)
+    private func mergeStatusAttributes(status: PRMergeStatus) -> (String, Color, String) {
+        switch status {
+        case .mergeable:
+            return ("checkmark.circle", .green, "Mergeable")
+        case .conflicting:
+            return ("exclamationmark.triangle", .red, "Conflicting")
+        case .unknown:
+            return ("questionmark.circle", .secondary, "Merge status unknown")
+        }
     }
 
     /// Creates a view displaying reviewer avatars and count
@@ -222,6 +297,23 @@ struct PreviewMetadataView: View {
 
         let commentWord = commentCount == 1 ? "comment" : "comments"
         return "\(commentCount) \(commentWord)"
+    }
+
+    /// Generates an accessibility label for check status
+    ///
+    /// - Parameter status: The check status
+    /// - Returns: A descriptive accessibility label
+    func checkStatusAccessibilityLabel(status: PRCheckStatus) -> String {
+        switch status {
+        case .passing:
+            return "CI checks passing"
+        case .failing:
+            return "CI checks failing"
+        case .pending:
+            return "CI checks pending"
+        case .unknown:
+            return "CI checks status unknown"
+        }
     }
 
     /// Generates an accessibility label for the reviewer list

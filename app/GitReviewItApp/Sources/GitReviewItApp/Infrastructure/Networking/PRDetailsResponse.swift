@@ -15,17 +15,29 @@ struct PRDetailsResponse: Decodable {
     let deletions: Int
     let changed_files: Int
     let requested_reviewers: [ReviewerResponse]
+    let head: Head
+    let mergeable: Bool?
+    let mergeable_state: String?
 
     struct ReviewerResponse: Decodable {
         let login: String
         let avatar_url: URL?
     }
 
+    struct Head: Decodable {
+        let sha: String
+    }
+
     /// Converts API response to domain model, optionally including completed reviews
     ///
-    /// - Parameter reviews: Optional array of completed PR reviews
-    /// - Returns: PRPreviewMetadata with change stats and reviewers
-    func toPRPreviewMetadata(reviews: [PRReviewResponse] = []) -> PRPreviewMetadata {
+    /// - Parameters:
+    ///   - reviews: Optional array of completed PR reviews
+    ///   - checkStatus: CI/CD check status (defaults to .unknown)
+    /// - Returns: PRPreviewMetadata with change stats, reviewers, and check status
+    func toPRPreviewMetadata(
+        reviews: [PRReviewResponse] = [],
+        checkStatus: PRCheckStatus = .unknown
+    ) -> PRPreviewMetadata {
         // Convert requested reviewers
         let requestedReviewers = requested_reviewers.map { reviewer in
             Reviewer(
@@ -67,12 +79,21 @@ struct PRDetailsResponse: Decodable {
             )
         }
 
+        let mergeStatus: PRMergeStatus
+        if let mergeable = mergeable {
+            mergeStatus = mergeable ? .mergeable : .conflicting
+        } else {
+            mergeStatus = .unknown
+        }
+
         return PRPreviewMetadata(
             additions: additions,
             deletions: deletions,
             changedFiles: changed_files,
             requestedReviewers: requestedReviewers,
-            completedReviewers: completedReviewers
+            completedReviewers: completedReviewers,
+            checkStatus: checkStatus,
+            mergeStatus: mergeStatus
         )
     }
 }

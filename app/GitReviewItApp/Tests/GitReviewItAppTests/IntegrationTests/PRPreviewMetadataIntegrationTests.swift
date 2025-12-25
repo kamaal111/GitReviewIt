@@ -596,4 +596,329 @@ struct PRPreviewMetadataIntegrationTests {
         // Verify no additional API calls were made for labels
         #expect(mockGitHubAPI.fetchReviewRequestsCallCount == 1)
     }
+
+    // MARK: - Check Status Tests
+
+    @Test
+    func `PR with passing checks shows passing status`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR with passing checks",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // Configure PR details with head SHA
+        let metadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 2,
+            requestedReviewers: [],
+            checkStatus: .passing
+        )
+        mockGitHubAPI.prDetailsToReturn["owner/repo#1"] = metadata
+
+        // Configure check runs response
+        let checkRuns = CheckRunsResponse(
+            total_count: 2,
+            check_runs: [
+                CheckRunsResponse.CheckRun(status: "completed", conclusion: "success"),
+                CheckRunsResponse.CheckRun(status: "completed", conclusion: "success"),
+            ]
+        )
+        mockGitHubAPI.checkRunsToReturn["owner/repo@abc123"] = checkRuns
+
+        // When
+        await container.loadPullRequests()
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        guard let firstPR = prs.first else {
+            Issue.record("Expected at least one PR")
+            return
+        }
+
+        // Then
+        guard let loadedMetadata = firstPR.previewMetadata else {
+            Issue.record("Expected metadata to be loaded")
+            return
+        }
+        #expect(loadedMetadata.checkStatus == .passing)
+    }
+
+    @Test
+    func `PR with failing checks shows failing status`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 2,
+            title: "PR with failing checks",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/2")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // Configure PR details with failing checks
+        let metadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 2,
+            requestedReviewers: [],
+            checkStatus: .failing
+        )
+        mockGitHubAPI.prDetailsToReturn["owner/repo#2"] = metadata
+
+        // Configure check runs response with failures
+        let checkRuns = CheckRunsResponse(
+            total_count: 3,
+            check_runs: [
+                CheckRunsResponse.CheckRun(status: "completed", conclusion: "success"),
+                CheckRunsResponse.CheckRun(status: "completed", conclusion: "failure"),
+                CheckRunsResponse.CheckRun(status: "completed", conclusion: "success"),
+            ]
+        )
+        mockGitHubAPI.checkRunsToReturn["owner/repo@def456"] = checkRuns
+
+        // When
+        await container.loadPullRequests()
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        guard let firstPR = prs.first else {
+            Issue.record("Expected at least one PR")
+            return
+        }
+
+        // Then
+        guard let loadedMetadata = firstPR.previewMetadata else {
+            Issue.record("Expected metadata to be loaded")
+            return
+        }
+        #expect(loadedMetadata.checkStatus == .failing)
+    }
+
+    @Test
+    func `PR with pending checks shows pending status`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 3,
+            title: "PR with pending checks",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/3")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // Configure PR details with pending checks
+        let metadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 2,
+            requestedReviewers: [],
+            checkStatus: .pending
+        )
+        mockGitHubAPI.prDetailsToReturn["owner/repo#3"] = metadata
+
+        // Configure check runs response with in-progress checks
+        let checkRuns = CheckRunsResponse(
+            total_count: 2,
+            check_runs: [
+                CheckRunsResponse.CheckRun(status: "completed", conclusion: "success"),
+                CheckRunsResponse.CheckRun(status: "in_progress", conclusion: nil),
+            ]
+        )
+        mockGitHubAPI.checkRunsToReturn["owner/repo@ghi789"] = checkRuns
+
+        // When
+        await container.loadPullRequests()
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        guard let firstPR = prs.first else {
+            Issue.record("Expected at least one PR")
+            return
+        }
+
+        // Then
+        guard let loadedMetadata = firstPR.previewMetadata else {
+            Issue.record("Expected metadata to be loaded")
+            return
+        }
+        #expect(loadedMetadata.checkStatus == .pending)
+    }
+
+    @Test
+    func `PR with no checks shows unknown status`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 4,
+            title: "PR with no checks",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/4")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // Configure PR details with unknown check status
+        let metadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 2,
+            requestedReviewers: [],
+            checkStatus: .unknown
+        )
+        mockGitHubAPI.prDetailsToReturn["owner/repo#4"] = metadata
+
+        // Configure empty check runs response
+        let checkRuns = CheckRunsResponse(total_count: 0, check_runs: [])
+        mockGitHubAPI.checkRunsToReturn["owner/repo@jkl012"] = checkRuns
+
+        // When
+        await container.loadPullRequests()
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        guard let firstPR = prs.first else {
+            Issue.record("Expected at least one PR")
+            return
+        }
+
+        // Then
+        guard let loadedMetadata = firstPR.previewMetadata else {
+            Issue.record("Expected metadata to be loaded")
+            return
+        }
+        #expect(loadedMetadata.checkStatus == .unknown)
+    }
+
+    @Test
+    func `PR with mergeable status shows mergeable`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 5,
+            title: "Mergeable PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/5")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // Configure PR details with mergeable status
+        let metadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 2,
+            requestedReviewers: [],
+            mergeStatus: .mergeable
+        )
+        mockGitHubAPI.prDetailsToReturn["owner/repo#5"] = metadata
+
+        // When
+        await container.loadPullRequests()
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        guard let firstPR = prs.first else {
+            Issue.record("Expected at least one PR")
+            return
+        }
+
+        // Then
+        guard let loadedMetadata = firstPR.previewMetadata else {
+            Issue.record("Expected metadata to be loaded")
+            return
+        }
+        #expect(loadedMetadata.mergeStatus == .mergeable)
+    }
+
+    @Test
+    func `PR with conflicting status shows conflicting`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 6,
+            title: "Conflicting PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/6")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // Configure PR details with conflicting status
+        let metadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 2,
+            requestedReviewers: [],
+            mergeStatus: .conflicting
+        )
+        mockGitHubAPI.prDetailsToReturn["owner/repo#6"] = metadata
+
+        // When
+        await container.loadPullRequests()
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        guard let firstPR = prs.first else {
+            Issue.record("Expected at least one PR")
+            return
+        }
+
+        // Then
+        guard let loadedMetadata = firstPR.previewMetadata else {
+            Issue.record("Expected metadata to be loaded")
+            return
+        }
+        #expect(loadedMetadata.mergeStatus == .conflicting)
+    }
 }
