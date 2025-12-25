@@ -3,7 +3,7 @@ import SwiftUI
 /// A view that displays preview metadata for a pull request
 ///
 /// Shows change statistics (additions, deletions, changed files),
-/// comment count, and reviewer information when available.
+/// comment count, reviewer information, and labels when available.
 /// Displays "—" for unavailable data to distinguish from zero values.
 struct PreviewMetadataView: View {
     /// The preview metadata to display, or nil if not yet loaded
@@ -11,6 +11,9 @@ struct PreviewMetadataView: View {
 
     /// The comment count from the Search API (always available)
     let commentCount: Int?
+
+    /// The labels associated with the PR (always available from Search API)
+    let labels: [PRLabel]
 
     /// The currently authenticated user's login (optional, used to determine sole reviewer status)
     let currentUserLogin: String?
@@ -50,6 +53,11 @@ struct PreviewMetadataView: View {
             // Reviewers (all reviewers - both requested and completed)
             if let reviewers = previewMetadata?.allReviewers, !reviewers.isEmpty {
                 reviewersView(reviewers: reviewers)
+            }
+
+            // Labels
+            if !labels.isEmpty {
+                labelsView(labels: labels)
             }
         }
         .font(.caption)
@@ -133,6 +141,47 @@ struct PreviewMetadataView: View {
         .accessibilityLabel(reviewersAccessibilityLabel(reviewers: reviewers))
     }
 
+    /// Creates a view displaying labels with color-coded backgrounds
+    ///
+    /// - Parameter labels: The list of PR labels
+    /// - Returns: A view displaying label tags
+    @ViewBuilder
+    private func labelsView(labels: [PRLabel]) -> some View {
+        HStack(spacing: 4) {
+            // Show up to 3 labels
+            ForEach(labels.prefix(3)) { label in
+                labelTag(label: label)
+            }
+
+            // Show count for additional labels
+            if labels.count > 3 {
+                Text("+\(labels.count - 3)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityLabel(labelsAccessibilityLabel(labels: labels))
+    }
+
+    /// Creates a single label tag with color-coded background
+    ///
+    /// - Parameter label: The label to display
+    /// - Returns: A view displaying the label tag
+    @ViewBuilder
+    private func labelTag(label: PRLabel) -> some View {
+        let backgroundColor = Color(hex: label.color) ?? .secondary
+        let textColor = backgroundColor.contrastingTextColor()
+
+        Text(label.name)
+            .font(.caption2)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(backgroundColor)
+            .foregroundStyle(textColor)
+            .clipShape(RoundedRectangle(cornerRadius: 3))
+            .accessibilityLabel("Label: \(label.name)")
+    }
+
     // MARK: - Accessibility Labels
 
     var filesAccessibilityLabel: String {
@@ -198,6 +247,25 @@ struct PreviewMetadataView: View {
         }
     }
 
+    /// Generates an accessibility label for the label list
+    ///
+    /// - Parameter labels: The list of PR labels
+    /// - Returns: A descriptive accessibility label
+    func labelsAccessibilityLabel(labels: [PRLabel]) -> String {
+        guard !labels.isEmpty else {
+            return "No labels"
+        }
+
+        let labelWord = labels.count == 1 ? "label" : "labels"
+        let names = labels.prefix(3).map { $0.name }.joined(separator: ", ")
+
+        if labels.count > 3 {
+            return "\(labels.count) \(labelWord): \(names) and \(labels.count - 3) more"
+        } else {
+            return "\(labels.count) \(labelWord): \(names)"
+        }
+    }
+
     /// Checks if the current user is the sole reviewer
     ///
     /// - Parameter reviewers: The list of requested reviewers
@@ -230,6 +298,7 @@ struct PreviewMetadataView: View {
             requestedReviewers: []
         ),
         commentCount: 12,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -244,6 +313,7 @@ struct PreviewMetadataView: View {
             requestedReviewers: []
         ),
         commentCount: 0,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -253,6 +323,7 @@ struct PreviewMetadataView: View {
     PreviewMetadataView(
         previewMetadata: nil,
         commentCount: nil,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -262,6 +333,7 @@ struct PreviewMetadataView: View {
     PreviewMetadataView(
         previewMetadata: nil,
         commentCount: 5,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -278,6 +350,7 @@ struct PreviewMetadataView: View {
             ]
         ),
         commentCount: 2,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -296,6 +369,7 @@ struct PreviewMetadataView: View {
             ]
         ),
         commentCount: 8,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -316,6 +390,7 @@ struct PreviewMetadataView: View {
             ]
         ),
         commentCount: 15,
+        labels: [],
         currentUserLogin: nil
     )
     .padding()
@@ -332,6 +407,7 @@ struct PreviewMetadataView: View {
             ]
         ),
         commentCount: 3,
+        labels: [],
         currentUserLogin: "currentuser"
     )
     .padding()
@@ -348,6 +424,55 @@ struct PreviewMetadataView: View {
             ]
         ),
         commentCount: 1,
+        labels: [],
+        currentUserLogin: nil
+    )
+    .padding()
+}
+
+#Preview("With Labels") {
+    PreviewMetadataView(
+        previewMetadata: PRPreviewMetadata(
+            additions: 120,
+            deletions: 45,
+            changedFiles: 8,
+            requestedReviewers: []
+        ),
+        commentCount: 5,
+        labels: [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "enhancement", color: "a2eeef"),
+            PRLabel(name: "documentation", color: "0075ca"),
+        ],
+        currentUserLogin: nil
+    )
+    .padding()
+}
+
+#Preview("With Many Labels") {
+    PreviewMetadataView(
+        previewMetadata: nil,
+        commentCount: 8,
+        labels: [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "urgent", color: "ff6b6b"),
+            PRLabel(name: "backend", color: "0e8a16"),
+            PRLabel(name: "frontend", color: "1d76db"),
+            PRLabel(name: "needs-review", color: "fbca04"),
+        ],
+        currentUserLogin: nil
+    )
+    .padding()
+}
+
+#Preview("Labels Only") {
+    PreviewMetadataView(
+        previewMetadata: nil,
+        commentCount: nil,
+        labels: [
+            PRLabel(name: "feature", color: "84b6eb"),
+            PRLabel(name: "high-priority", color: "d93f0b"),
+        ],
         currentUserLogin: nil
     )
     .padding()

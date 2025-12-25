@@ -54,6 +54,7 @@ struct PullRequestRow: View {
                 PreviewMetadataView(
                     previewMetadata: pullRequest.previewMetadata,
                     commentCount: pullRequest.commentCount,
+                    labels: pullRequest.labels,
                     currentUserLogin: currentUserLogin
                 )
             }

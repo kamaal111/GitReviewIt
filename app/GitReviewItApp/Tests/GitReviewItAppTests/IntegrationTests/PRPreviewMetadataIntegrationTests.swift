@@ -359,4 +359,241 @@ struct PRPreviewMetadataIntegrationTests {
         #expect(metadata.requestedReviewers[0].avatarURL != nil)
         #expect(metadata.requestedReviewers[1].avatarURL == nil)
     }
+
+    // MARK: - Label Data Tests
+
+    @Test
+    func `Search API returns label data for PRs with labels`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let labels = [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "enhancement", color: "a2eeef"),
+        ]
+
+        let prWithLabels = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR with labels",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0,
+            labels: labels
+        )
+        mockGitHubAPI.pullRequestsToReturn = [prWithLabels]
+
+        // When
+        await container.loadPullRequests()
+
+        // Then
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(prs.count == 1)
+        #expect(prs[0].labels.count == 2)
+        #expect(prs[0].labels[0].name == "bug")
+        #expect(prs[0].labels[0].color == "d73a4a")
+        #expect(prs[0].labels[1].name == "enhancement")
+        #expect(prs[0].labels[1].color == "a2eeef")
+    }
+
+    @Test
+    func `Search API returns empty array for PRs with no labels`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let prWithoutLabels = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 2,
+            title: "PR without labels",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/2")!,
+            commentCount: 0,
+            labels: []
+        )
+        mockGitHubAPI.pullRequestsToReturn = [prWithoutLabels]
+
+        // When
+        await container.loadPullRequests()
+
+        // Then
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(prs.count == 1)
+        #expect(prs[0].labels.isEmpty)
+    }
+
+    @Test
+    func `Search API handles mixed label scenarios correctly`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let prNoLabels = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR 1",
+            authorLogin: "author1",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0,
+            labels: []
+        )
+
+        let prSingleLabel = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 2,
+            title: "PR 2",
+            authorLogin: "author2",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/2")!,
+            commentCount: 0,
+            labels: [PRLabel(name: "bug", color: "d73a4a")]
+        )
+
+        let prMultipleLabels = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 3,
+            title: "PR 3",
+            authorLogin: "author3",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/3")!,
+            commentCount: 0,
+            labels: [
+                PRLabel(name: "bug", color: "d73a4a"),
+                PRLabel(name: "urgent", color: "ff6b6b"),
+                PRLabel(name: "backend", color: "0e8a16"),
+            ]
+        )
+
+        mockGitHubAPI.pullRequestsToReturn = [prNoLabels, prSingleLabel, prMultipleLabels]
+
+        // When
+        await container.loadPullRequests()
+
+        // Then
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(prs.count == 3)
+        #expect(prs[0].labels.isEmpty)
+        #expect(prs[1].labels.count == 1)
+        #expect(prs[2].labels.count == 3)
+    }
+
+    @Test
+    func `labels persist through reload`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let initialLabels = [PRLabel(name: "bug", color: "d73a4a")]
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0,
+            labels: initialLabels
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // When - First load
+        await container.loadPullRequests()
+
+        guard case .loaded(let firstPrs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(firstPrs[0].labels.count == 1)
+
+        // Update labels in mock
+        let updatedLabels = [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "fixed", color: "0e8a16"),
+        ]
+        let updatedPr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0,
+            labels: updatedLabels
+        )
+        mockGitHubAPI.pullRequestsToReturn = [updatedPr]
+
+        // When - Reload
+        await container.loadPullRequests()
+
+        // Then - Labels updated
+        guard case .loaded(let reloadedPrs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(reloadedPrs[0].labels.count == 2)
+    }
+
+    @Test
+    func `labels available immediately from Search API response`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let labels = [
+            PRLabel(name: "documentation", color: "0075ca"),
+            PRLabel(name: "good first issue", color: "7057ff"),
+        ]
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0,
+            labels: labels
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        // When
+        await container.loadPullRequests()
+
+        // Then - Labels are immediately available (no async enrichment needed)
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(prs[0].labels.count == 2)
+        // Verify no additional API calls were made for labels
+        #expect(mockGitHubAPI.fetchReviewRequestsCallCount == 1)
+    }
 }

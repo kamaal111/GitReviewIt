@@ -19,6 +19,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 12,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -31,6 +32,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: nil,
             commentCount: 0,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -44,6 +46,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: nil,
             commentCount: nil,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -57,6 +60,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: nil,
             commentCount: 1,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -69,6 +73,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: nil,
             commentCount: 5,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -87,6 +92,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 3,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -104,6 +110,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: nil,
             commentCount: 7,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -116,6 +123,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: nil,
             commentCount: 999,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -136,6 +144,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -159,6 +168,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -183,6 +193,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -206,6 +217,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: "currentuser"
         )
 
@@ -229,6 +241,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: "currentuser"
         )
 
@@ -255,6 +268,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -275,6 +289,7 @@ struct PreviewMetadataViewTests {
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
             commentCount: 0,
+            labels: [],
             currentUserLogin: nil
         )
 
@@ -284,5 +299,118 @@ struct PreviewMetadataViewTests {
         // Verify accessibility label works
         let accessibilityLabel = view.reviewersAccessibilityLabel(reviewers: [reviewer])
         #expect(accessibilityLabel == "1 reviewer: noavatar")
+    }
+
+    // MARK: - Label Display Tests
+
+    @Test
+    func `displays no labels when list is empty`() throws {
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: 0,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        // Verify accessibility label for empty labels
+        let accessibilityLabel = view.labelsAccessibilityLabel(labels: [])
+        #expect(accessibilityLabel == "No labels")
+    }
+
+    @Test
+    func `displays single label correctly`() throws {
+        let label = PRLabel(name: "bug", color: "d73a4a")
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: 0,
+            labels: [label],
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+
+        // Verify accessibility label
+        let accessibilityLabel = view.labelsAccessibilityLabel(labels: [label])
+        #expect(accessibilityLabel == "1 label: bug")
+    }
+
+    @Test
+    func `displays multiple labels correctly`() throws {
+        let labels = [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "enhancement", color: "a2eeef"),
+            PRLabel(name: "documentation", color: "0075ca"),
+        ]
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: 0,
+            labels: labels,
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+
+        // Verify accessibility label
+        let accessibilityLabel = view.labelsAccessibilityLabel(labels: labels)
+        #expect(accessibilityLabel == "3 labels: bug, enhancement, documentation")
+    }
+
+    @Test
+    func `truncates label list when more than three labels`() throws {
+        let labels = [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "urgent", color: "ff6b6b"),
+            PRLabel(name: "backend", color: "0e8a16"),
+            PRLabel(name: "frontend", color: "1d76db"),
+            PRLabel(name: "needs-review", color: "fbca04"),
+        ]
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: 0,
+            labels: labels,
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+
+        // Verify accessibility label shows first 3 labels plus count
+        let accessibilityLabel = view.labelsAccessibilityLabel(labels: labels)
+        #expect(accessibilityLabel == "5 labels: bug, urgent, backend and 2 more")
+    }
+
+    @Test
+    func `displays labels alongside metadata`() throws {
+        let labels = [
+            PRLabel(name: "bug", color: "d73a4a"),
+            PRLabel(name: "high-priority", color: "d93f0b"),
+        ]
+        let previewMetadata = PRPreviewMetadata(
+            additions: 50,
+            deletions: 20,
+            changedFiles: 4,
+            requestedReviewers: []
+        )
+        let view = PreviewMetadataView(
+            previewMetadata: previewMetadata,
+            commentCount: 8,
+            labels: labels,
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+
+        // Verify all accessibility labels work
+        let labelsLabel = view.labelsAccessibilityLabel(labels: labels)
+        #expect(labelsLabel == "2 labels: bug, high-priority")
+
+        let filesLabel = view.filesAccessibilityLabel
+        #expect(filesLabel == "4 files changed")
+
+        let commentsLabel = view.commentsAccessibilityLabel
+        #expect(commentsLabel == "8 comments")
     }
 }

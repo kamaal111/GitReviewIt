@@ -121,13 +121,13 @@ All foundational models and infrastructure that multiple user stories depend on.
 
 ### Implementation for User Story 4
 
-- [ ] T041 [P] [US4] Update PreviewMetadataView to display labels with color-coded backgrounds in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T042 [P] [US4] Implement Color extension for hex color parsing (Color(hex:)) in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Utilities/ColorExtensions.swift
-- [ ] T043 [P] [US4] Add text color selection logic (black/white based on background luminance) in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Utilities/ColorExtensions.swift
-- [ ] T044 [P] [US4] Add accessibility labels for label list (VoiceOver support) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T045 [P] [US4] Add unit tests for label display (no labels, single label, multiple labels) in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PreviewMetadataViewTests.swift
-- [ ] T046 [P] [US4] Add unit tests for hex color parsing and text color selection in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/ColorExtensionsTests.swift
-- [ ] T047 [P] [US4] Add integration test verifying label data from Search API in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataTests.swift
+- [X] T041 [P] [US4] Update PreviewMetadataView to display labels with color-coded backgrounds in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T042 [P] [US4] Implement Color extension for hex color parsing (Color(hex:)) in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Utilities/ColorExtensions.swift
+- [X] T043 [P] [US4] Add text color selection logic (black/white based on background luminance) in app/GitReviewItApp/Sources/GitReviewItApp/Shared/Utilities/ColorExtensions.swift
+- [X] T044 [P] [US4] Add accessibility labels for label list (VoiceOver support) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T045 [P] [US4] Add unit tests for label display (no labels, single label, multiple labels) in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PreviewMetadataViewTests.swift
+- [X] T046 [P] [US4] Add unit tests for hex color parsing and text color selection in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/ColorExtensionsTests.swift
+- [X] T047 [P] [US4] Add integration test verifying label data from Search API in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataTests.swift
 
 **Checkpoint**: User Story 4 complete - labels visible with proper styling, independently testable
 
