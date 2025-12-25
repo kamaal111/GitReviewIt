@@ -40,7 +40,9 @@ import Testing
                         "updated_at": "2023-01-01T00:00:00Z",
                         "state": "open",
                         "user": { "login": "author1" },
-                        "repository_url": "https://api.github.com/repos/owner/repo"
+                        "repository_url": "https://api.github.com/repos/owner/repo",
+                        "comments": 0,
+                        "labels": []
                     }
                 ]
             }
@@ -60,7 +62,9 @@ import Testing
                         "updated_at": "2023-01-03T00:00:00Z",
                         "state": "open",
                         "user": { "login": "author3" },
-                        "repository_url": "https://api.github.com/repos/owner/repo"
+                        "repository_url": "https://api.github.com/repos/owner/repo",
+                        "comments": 0,
+                        "labels": []
                     }
                 ]
             }
@@ -80,7 +84,9 @@ import Testing
                         "updated_at": "2023-01-02T00:00:00Z",
                         "state": "open",
                         "user": { "login": "author2" },
-                        "repository_url": "https://api.github.com/repos/owner/repo"
+                        "repository_url": "https://api.github.com/repos/owner/repo",
+                        "comments": 0,
+                        "labels": []
                     }
                 ]
             }
@@ -100,7 +106,9 @@ import Testing
                         "updated_at": "2023-01-04T00:00:00Z",
                         "state": "open",
                         "user": { "login": "author4" },
-                        "repository_url": "https://api.github.com/repos/owner/repo"
+                        "repository_url": "https://api.github.com/repos/owner/repo",
+                        "comments": 0,
+                        "labels": []
                     }
                 ]
             }
@@ -199,7 +207,9 @@ import Testing
                         "updated_at": "2023-01-01T00:00:00Z",
                         "state": "open",
                         "user": { "login": "author1" },
-                        "repository_url": "https://api.github.com/repos/owner/repo"
+                        "repository_url": "https://api.github.com/repos/owner/repo",
+                        "comments": 0,
+                        "labels": []
                     }
                 ]
             }
@@ -258,7 +268,9 @@ import Testing
                         "updated_at": "2023-01-01T00:00:00Z",
                         "state": "open",
                         "user": { "login": "author1" },
-                        "repository_url": "https://api.github.com/repos/owner/repo"
+                        "repository_url": "https://api.github.com/repos/owner/repo",
+                        "comments": 0,
+                        "labels": []
                     }
                 ]
             }

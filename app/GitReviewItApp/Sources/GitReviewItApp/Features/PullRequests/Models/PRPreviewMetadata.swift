@@ -69,7 +69,12 @@ struct PRPreviewMetadata: Equatable, Sendable {
         self.changedFiles = changedFiles
         self.requestedReviewers = requestedReviewers
 
-        logger.debug("Created PRPreviewMetadata: +\(additions) -\(deletions) ~\(changedFiles) files, \(requestedReviewers.count) reviewers")
+        logger.debug(
+            """
+            Created PRPreviewMetadata: +\(additions) -\(deletions) \
+            ~\(changedFiles) files, \(requestedReviewers.count) reviewers
+            """
+        )
     }
 }
 

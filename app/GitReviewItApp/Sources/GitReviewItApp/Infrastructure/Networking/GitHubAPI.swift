@@ -24,6 +24,22 @@ protocol GitHubAPI: Sendable {
     /// - Returns: Array of PullRequest objects (may be empty)
     /// - Throws: APIError if request fails
     func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest]
+
+    /// Fetches detailed information for a specific pull request
+    ///
+    /// - Parameters:
+    ///   - owner: Repository owner username
+    ///   - repo: Repository name
+    ///   - number: PR number
+    ///   - credentials: GitHub credentials (token + baseURL)
+    /// - Returns: PRPreviewMetadata with change stats and reviewers
+    /// - Throws: APIError if request fails or PR not found
+    func fetchPRDetails(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> PRPreviewMetadata
 }
 
 // MARK: - GitHubAPIClient
@@ -123,7 +139,7 @@ final class GitHubAPIClient: GitHubAPI {
         var queries = [
             "type:pr+state:open+review-requested:\(user.login)+-author:\(user.login)",
             "type:pr+state:open+assignee:\(user.login)+-author:\(user.login)",
-            "type:pr+state:open+reviewed-by:\(user.login)+-author:\(user.login)"
+            "type:pr+state:open+reviewed-by:\(user.login)+-author:\(user.login)",
         ]
         for team in teams {
             queries.append("type:pr+state:open+team-review-requested:\(team.fullSlug)+-author:\(user.login)")
@@ -148,6 +164,40 @@ final class GitHubAPIClient: GitHubAPI {
                 .sorted { $0.updatedAt > $1.updatedAt }
 
             return uniquePRs
+        }
+    }
+
+    func fetchPRDetails(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> PRPreviewMetadata {
+        let baseURL = credentials.baseURL.trimmingSuffix("/")
+        guard let url = URL(string: "\(baseURL)/repos/\(owner)/\(repo)/pulls/\(number)") else {
+            throw APIError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+
+        do {
+            let (data, response) = try await httpClient.perform(request)
+
+            guard (200...299).contains(response.statusCode) else {
+                throw mapHTTPError(statusCode: response.statusCode, data: data, response: response)
+            }
+
+            let detailsResponse = try decoder.decode(PRDetailsResponse.self, from: data)
+            return detailsResponse.toPRPreviewMetadata()
+        } catch let error as HTTPError {
+            throw mapHTTPErrorToAPIError(error)
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.decodingError(error)
         }
     }
 
@@ -184,6 +234,11 @@ final class GitHubAPIClient: GitHubAPI {
     private func mapSearchIssueToPullRequest(_ item: SearchIssueItem) -> PullRequest? {
         guard let (owner, name) = extractRepositoryInfo(from: item.repository_url) else { return nil }
 
+        // Map SearchLabel to PRLabel
+        let labels = item.labels.map { searchLabel in
+            PRLabel(name: searchLabel.name, color: searchLabel.color)
+        }
+
         return PullRequest(
             repositoryOwner: owner,
             repositoryName: name,
@@ -192,7 +247,10 @@ final class GitHubAPIClient: GitHubAPI {
             authorLogin: item.user.login,
             authorAvatarURL: item.user.avatar_url,
             updatedAt: item.updated_at,
-            htmlURL: item.html_url
+            htmlURL: item.html_url,
+            commentCount: item.comments,
+            labels: labels,
+            previewMetadata: nil
         )
     }
 
@@ -300,11 +358,6 @@ private struct GitHubErrorResponse: Decodable {
     let message: String
 }
 
-// Unused now but kept for compatibility if needed elsewhere
-private struct GitHubSearchResponse: Decodable {
-    let items: [PullRequest]
-}
-
 private struct SearchIssuesResponse: Decodable {
     let total_count: Int
     let incomplete_results: Bool
@@ -319,6 +372,13 @@ private struct SearchIssueItem: Decodable {
     let state: String
     let user: SearchUser
     let repository_url: String
+    let comments: Int
+    let labels: [SearchLabel]
+}
+
+private struct SearchLabel: Decodable {
+    let name: String
+    let color: String
 }
 
 private struct SearchUser: Decodable {

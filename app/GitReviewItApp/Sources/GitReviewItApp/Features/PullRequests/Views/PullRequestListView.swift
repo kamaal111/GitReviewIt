@@ -296,6 +296,20 @@ struct PullRequestListView: View {
                 )
             ]
         }
+
+        func fetchPRDetails(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> PRPreviewMetadata {
+            PRPreviewMetadata(
+                additions: 145,
+                deletions: 23,
+                changedFiles: 7,
+                requestedReviewers: []
+            )
+        }
     }
 
     private struct PreviewCredentialStorage: CredentialStorage {

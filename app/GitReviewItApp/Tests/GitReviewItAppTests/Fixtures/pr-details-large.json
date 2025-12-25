@@ -1,0 +1,104 @@
+{
+    "url": "https://api.github.com/repos/bigproject/monorepo/pulls/9999",
+    "id": 2222333444,
+    "node_id": "PR_kwDOAJy2Ks5zWxLarge",
+    "html_url": "https://github.com/bigproject/monorepo/pull/9999",
+    "diff_url": "https://github.com/bigproject/monorepo/pull/9999.diff",
+    "patch_url": "https://github.com/bigproject/monorepo/pull/9999.patch",
+    "issue_url": "https://api.github.com/repos/bigproject/monorepo/issues/9999",
+    "number": 9999,
+    "state": "open",
+    "locked": false,
+    "title": "Major refactoring: Migrate entire codebase to new architecture",
+    "user": {
+        "login": "architect",
+        "id": 55555,
+        "avatar_url": "https://avatars.githubusercontent.com/u/55555?v=4"
+    },
+    "body": "This is a massive refactoring effort to modernize the entire codebase.\n\n## Changes\n- Complete rewrite of core services\n- Migration to new database schema\n- Update all tests\n- Refactor API endpoints\n- Update documentation",
+    "created_at": "2025-12-15T08:00:00Z",
+    "updated_at": "2025-12-24T18:45:00Z",
+    "closed_at": null,
+    "merged_at": null,
+    "merge_commit_sha": "largecommit123",
+    "assignee": null,
+    "assignees": [],
+    "requested_reviewers": [
+        {
+            "login": "senior-dev-1",
+            "id": 11111,
+            "avatar_url": "https://avatars.githubusercontent.com/u/11111?v=4"
+        },
+        {
+            "login": "senior-dev-2",
+            "id": 22222,
+            "avatar_url": "https://avatars.githubusercontent.com/u/22222?v=4"
+        },
+        {
+            "login": "tech-lead",
+            "id": 33333,
+            "avatar_url": "https://avatars.githubusercontent.com/u/33333?v=4"
+        },
+        {
+            "login": "architect-reviewer",
+            "id": 44444,
+            "avatar_url": "https://avatars.githubusercontent.com/u/44444?v=4"
+        }
+    ],
+    "requested_teams": [],
+    "labels": [
+        {
+            "id": 111222333,
+            "name": "refactoring",
+            "color": "fbca04",
+            "default": false,
+            "description": "Code refactoring"
+        },
+        {
+            "id": 444555666,
+            "name": "breaking-change",
+            "color": "b60205",
+            "default": false,
+            "description": "Breaking API changes"
+        },
+        {
+            "id": 777888999,
+            "name": "needs-careful-review",
+            "color": "d93f0b",
+            "default": false,
+            "description": "Requires extensive review"
+        }
+    ],
+    "milestone": null,
+    "draft": false,
+    "commits_url": "https://api.github.com/repos/bigproject/monorepo/pulls/9999/commits",
+    "review_comments_url": "https://api.github.com/repos/bigproject/monorepo/pulls/9999/comments",
+    "review_comment_url": "https://api.github.com/repos/bigproject/monorepo/pulls/comments{/number}",
+    "comments_url": "https://api.github.com/repos/bigproject/monorepo/issues/9999/comments",
+    "statuses_url": "https://api.github.com/repos/bigproject/monorepo/statuses/largecommit123",
+    "head": {
+        "label": "architect:massive-refactor",
+        "ref": "massive-refactor",
+        "sha": "largecommit123"
+    },
+    "base": {
+        "label": "bigproject:main",
+        "ref": "main",
+        "sha": "mainbranch456"
+    },
+    "author_association": "MEMBER",
+    "auto_merge": null,
+    "active_lock_reason": null,
+    "merged": false,
+    "mergeable": true,
+    "rebaseable": false,
+    "mergeable_state": "unstable",
+    "merged_by": null,
+    "comments": 47,
+    "review_comments": 128,
+    "maintainer_can_modify": false,
+    "commits": 156,
+    "additions": 8942,
+    "deletions": 6781,
+    "changed_files": 243
+}

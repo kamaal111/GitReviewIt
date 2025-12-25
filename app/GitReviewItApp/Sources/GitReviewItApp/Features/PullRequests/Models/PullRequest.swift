@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a GitHub pull request awaiting the user's review
-struct PullRequest: Identifiable, Equatable, Sendable, Decodable {
+struct PullRequest: Identifiable, Equatable, Sendable {
     /// Unique identifier in "owner/repo#number" format
     var id: String {
         "\(repositoryOwner)/\(repositoryName)#\(number)"
@@ -31,6 +31,15 @@ struct PullRequest: Identifiable, Equatable, Sendable, Decodable {
     /// GitHub web URL for opening PR
     let htmlURL: URL
 
+    /// Number of comments on this PR (from Search API - always available)
+    let commentCount: Int
+
+    /// Labels/tags applied to this PR (from Search API - always available, empty if no labels)
+    let labels: [PRLabel]
+
+    /// Preview metadata from PR Details API (loaded asynchronously, nil until fetched)
+    var previewMetadata: PRPreviewMetadata?
+
     /// Repository full name in "owner/repo" format
     var repositoryFullName: String {
         "\(repositoryOwner)/\(repositoryName)"
@@ -46,6 +55,9 @@ struct PullRequest: Identifiable, Equatable, Sendable, Decodable {
     ///   - authorAvatarURL: Avatar URL for PR author
     ///   - updatedAt: Last update timestamp (must not be in future)
     ///   - htmlURL: GitHub web URL for opening PR
+    ///   - commentCount: Number of comments (must be non-negative, defaults to 0)
+    ///   - labels: Labels/tags applied (empty array if none, defaults to empty)
+    ///   - previewMetadata: Optional preview metadata from PR Details API (defaults to nil)
     init(
         repositoryOwner: String,
         repositoryName: String,
@@ -54,7 +66,10 @@ struct PullRequest: Identifiable, Equatable, Sendable, Decodable {
         authorLogin: String,
         authorAvatarURL: URL?,
         updatedAt: Date,
-        htmlURL: URL
+        htmlURL: URL,
+        commentCount: Int = 0,
+        labels: [PRLabel] = [],
+        previewMetadata: PRPreviewMetadata? = nil
     ) {
         precondition(!repositoryOwner.isEmpty, "Repository owner cannot be empty")
         precondition(!repositoryName.isEmpty, "Repository name cannot be empty")
@@ -62,6 +77,7 @@ struct PullRequest: Identifiable, Equatable, Sendable, Decodable {
         precondition(!title.isEmpty, "PR title cannot be empty")
         precondition(!authorLogin.isEmpty, "Author login cannot be empty")
         precondition(updatedAt <= Date(), "Updated date cannot be in future")
+        precondition(commentCount >= 0, "Comment count cannot be negative")
 
         self.repositoryOwner = repositoryOwner
         self.repositoryName = repositoryName
@@ -71,5 +87,8 @@ struct PullRequest: Identifiable, Equatable, Sendable, Decodable {
         self.authorAvatarURL = authorAvatarURL
         self.updatedAt = updatedAt
         self.htmlURL = htmlURL
+        self.commentCount = commentCount
+        self.labels = labels
+        self.previewMetadata = previewMetadata
     }
 }

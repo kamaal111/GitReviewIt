@@ -35,19 +35,19 @@ All foundational models and infrastructure that multiple user stories depend on.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Extend PullRequest model with commentCount, labels, and previewMetadata fields in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PullRequest.swift
-- [ ] T008 [P] Create PRDetailsResponse decoding structure in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift
-- [ ] T009 [P] Add fetchPRDetails method to GitHubAPI protocol in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift
-- [ ] T010 [P] Add fixture pr-details-response.json to app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/pr-details-response.json
-- [ ] T011 [P] Add fixture pr-details-minimal.json to app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/pr-details-minimal.json
-- [ ] T012 [P] Add fixture pr-details-large.json (edge case: large PR) to app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/pr-details-large.json
-- [ ] T013 [P] Update existing prs-response.json fixture to include comments and labels fields in app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/prs-response.json
-- [ ] T014 [P] Update existing prs-with-varied-data.json fixture with varied comments/labels in app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/prs-with-varied-data.json
-- [ ] T015 Implement fetchPRDetails in GitHubAPIClient with error handling and rate limit detection in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPIClient.swift
-- [ ] T016 [P] Update MockGitHubAPI with fetchPRDetails mock implementation in app/GitReviewItApp/Tests/GitReviewItAppTests/TestDoubles/MockGitHubAPI.swift
-- [ ] T017 [P] Add TestHelpers method for loading PR details fixtures in app/GitReviewItApp/Tests/GitReviewItAppTests/TestHelpers.swift
-- [ ] T018 Update Search API response mapping to populate commentCount and labels in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPIClient.swift
-- [ ] T019 Update all existing tests that create PullRequest instances to include new fields in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PullRequestListTests.swift
+- [X] T007 Extend PullRequest model with commentCount, labels, and previewMetadata fields in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PullRequest.swift
+- [X] T008 [P] Create PRDetailsResponse decoding structure in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift
+- [X] T009 [P] Add fetchPRDetails method to GitHubAPI protocol in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift
+- [X] T010 [P] Add fixture pr-details-response.json to app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/pr-details-response.json
+- [X] T011 [P] Add fixture pr-details-minimal.json to app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/pr-details-minimal.json
+- [X] T012 [P] Add fixture pr-details-large.json (edge case: large PR) to app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/pr-details-large.json
+- [X] T013 [P] Update existing prs-response.json fixture to include comments and labels fields in app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/prs-response.json
+- [X] T014 [P] Update existing prs-with-varied-data.json fixture with varied comments/labels in app/GitReviewItApp/Tests/GitReviewItAppTests/Fixtures/prs-with-varied-data.json
+- [X] T015 Implement fetchPRDetails in GitHubAPIClient with error handling and rate limit detection in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPIClient.swift
+- [X] T016 [P] Update MockGitHubAPI with fetchPRDetails mock implementation in app/GitReviewItApp/Tests/GitReviewItAppTests/TestDoubles/MockGitHubAPI.swift
+- [X] T017 [P] Add TestHelpers method for loading PR details fixtures in app/GitReviewItApp/Tests/GitReviewItAppTests/TestHelpers.swift
+- [X] T018 Update Search API response mapping to populate commentCount and labels in app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPIClient.swift
+- [X] T019 Update all existing tests that create PullRequest instances to include new fields in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PullRequestListTests.swift
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

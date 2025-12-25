@@ -330,6 +330,20 @@ private struct ScopeBadge: View {
         func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
 
         func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] { [] }
+
+        func fetchPRDetails(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> PRPreviewMetadata {
+            PRPreviewMetadata(
+                additions: 10,
+                deletions: 5,
+                changedFiles: 2,
+                requestedReviewers: []
+            )
+        }
     }
 
     private struct PreviewCredentialStorage: CredentialStorage {
