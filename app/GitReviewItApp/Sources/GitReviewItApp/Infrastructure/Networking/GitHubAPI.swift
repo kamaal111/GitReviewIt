@@ -40,6 +40,22 @@ protocol GitHubAPI: Sendable {
         number: Int,
         credentials: GitHubCredentials
     ) async throws -> PRPreviewMetadata
+
+    /// Fetches reviews for a specific pull request
+    ///
+    /// - Parameters:
+    ///   - owner: Repository owner username
+    ///   - repo: Repository name
+    ///   - number: PR number
+    ///   - credentials: GitHub credentials (token + baseURL)
+    /// - Returns: Array of PRReviewResponse objects (may be empty)
+    /// - Throws: APIError if request fails
+    func fetchPRReviews(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewResponse]
 }
 
 // MARK: - GitHubAPIClient
@@ -191,7 +207,49 @@ final class GitHubAPIClient: GitHubAPI {
             }
 
             let detailsResponse = try decoder.decode(PRDetailsResponse.self, from: data)
-            return detailsResponse.toPRPreviewMetadata()
+
+            // Fetch reviews in parallel
+            let reviews = try await fetchPRReviews(
+                owner: owner,
+                repo: repo,
+                number: number,
+                credentials: credentials
+            )
+
+            return detailsResponse.toPRPreviewMetadata(reviews: reviews)
+        } catch let error as HTTPError {
+            throw mapHTTPErrorToAPIError(error)
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func fetchPRReviews(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewResponse] {
+        let baseURL = credentials.baseURL.trimmingSuffix("/")
+        guard let url = URL(string: "\(baseURL)/repos/\(owner)/\(repo)/pulls/\(number)/reviews") else {
+            throw APIError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+
+        do {
+            let (data, response) = try await httpClient.perform(request)
+
+            guard (200...299).contains(response.statusCode) else {
+                throw mapHTTPError(statusCode: response.statusCode, data: data, response: response)
+            }
+
+            return try decoder.decode([PRReviewResponse].self, from: data)
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {

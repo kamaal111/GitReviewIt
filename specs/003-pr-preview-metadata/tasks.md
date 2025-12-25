@@ -102,12 +102,12 @@ All foundational models and infrastructure that multiple user stories depend on.
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Update PreviewMetadataView to display requested reviewers list in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T036 [P] [US3] Add reviewer avatar display (if avatarURL available) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T037 [P] [US3] Add logic to indicate when user is sole reviewer in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T038 [P] [US3] Add accessibility labels for reviewer list (VoiceOver support) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T039 [P] [US3] Add unit tests for reviewer display (empty, single, multiple reviewers) in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PreviewMetadataViewTests.swift
-- [ ] T040 [P] [US3] Add integration test verifying reviewer data from PR Details API in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataTests.swift
+- [X] T035 [P] [US3] Update PreviewMetadataView to display requested reviewers list in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T036 [P] [US3] Add reviewer avatar display (if avatarURL available) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T037 [P] [US3] Add logic to indicate when user is sole reviewer in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T038 [P] [US3] Add accessibility labels for reviewer list (VoiceOver support) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T039 [P] [US3] Add unit tests for reviewer display (empty, single, multiple reviewers) in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PreviewMetadataViewTests.swift
+- [X] T040 [P] [US3] Add integration test verifying reviewer data from PR Details API in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataTests.swift
 
 **Checkpoint**: User Story 3 complete - reviewer information visible, independently testable
 

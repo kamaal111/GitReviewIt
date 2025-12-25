@@ -99,19 +99,43 @@ struct PRPreviewMetadata: Equatable, Sendable {
 
 ### Reviewer (New)
 
-**Purpose**: Represents a user requested to review a PR.
+**Purpose**: Represents a reviewer for a PR, including their review state.
 
 ```swift
+enum ReviewState: String, Sendable {
+    case requested      // Requested to review but hasn't submitted yet
+    case approved       // Submitted approval review
+    case changesRequested // Requested changes
+    case commented      // Left comments without approval/rejection
+}
+
 struct Reviewer: Identifiable, Equatable, Sendable {
     let login: String
     let avatarURL: URL?
+    let state: ReviewState
     
     var id: String { login }
     
-    init(login: String, avatarURL: URL?) {
+    init(login: String, avatarURL: URL?, state: ReviewState = .requested) {
         precondition(!login.isEmpty, "login must not be empty")
         self.login = login
         self.avatarURL = avatarURL
+        self.state = state
+    }
+}
+
+extension Reviewer: Decodable {
+    enum CodingKeys: String, CodingKey {
+        case login
+        case avatarURL = "avatar_url"
+        case state
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        login = try container.decode(String.self, forKey: .login)
+        avatarURL = try container.decodeIfPresent(URL.self, forKey: .avatarURL)
+        state = try container.decodeIfPresent(ReviewState.self, forKey: .state) ?? .requested
     }
 }
 ```
@@ -119,6 +143,15 @@ struct Reviewer: Identifiable, Equatable, Sendable {
 **Invariants**:
 - `login`: Never empty
 - `avatarURL`: May be nil (user has no avatar or API didn't provide)
+- `state`: Defaults to `.requested` for backward compatibility
+
+**GitHub API Integration**:
+- `requested_reviewers` from PR Details API → state = `.requested`
+- Reviews from PR Reviews API → state mapped from review.state:
+  - "APPROVED" → `.approved`
+  - "CHANGES_REQUESTED" → `.changesRequested`
+  - "COMMENTED" → `.commented`
+- If a user has multiple reviews, the latest review (by `submitted_at`) determines their state
 
 ---
 
@@ -199,8 +232,9 @@ func mapPRDetailsToPRPreviewMetadata(_ response: PRDetailsResponse) -> PRPreview
         deletions: response.deletions,
         changedFiles: response.changed_files,
         requestedReviewers: response.requested_reviewers.map { reviewer in
-            Reviewer(login: reviewer.login, avatarURL: reviewer.avatar_url)
-        }
+            Reviewer(login: reviewer.login, avatarURL: reviewer.avatar_url, state: .requested)
+        },
+        completedReviewers: []  // Populated by merging with fetchPRReviews() results
     )
 }
 ```
@@ -224,6 +258,34 @@ struct PRDetailsResponse: Decodable {
         let slug: String
     }
 }
+
+struct PRReviewResponse: Decodable {
+    let user: UserResponse
+    let state: String  // "APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED"
+    let submitted_at: String  // ISO8601 timestamp
+    
+    struct UserResponse: Decodable {
+        let login: String
+        let avatar_url: URL?
+    }
+}
+```
+
+**Review Data Merging Logic**:
+```swift
+// In GitHubAPIClient.fetchPRDetails:
+// 1. Fetch PR details (includes requested_reviewers)
+// 2. Fetch PR reviews in parallel
+// 3. Merge in PRDetailsResponse.toPRPreviewMetadata(reviews:)
+
+// Merge algorithm:
+// - Build map of latest review per user (by submitted_at timestamp)
+// - Convert requested_reviewers to Reviewer with state = .requested
+// - Convert completed reviews to Reviewer with mapped state:
+//   * "APPROVED" -> .approved
+//   * "CHANGES_REQUESTED" -> .changesRequested  
+//   * "COMMENTED" -> .commented
+// - User appears in EITHER requested OR completed, never both
 ```
 
 ---

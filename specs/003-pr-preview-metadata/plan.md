@@ -5,7 +5,7 @@
 
 ## Summary
 
-Enhance the PR list view with preview metadata (change size, comments, reviewers, labels) to enable quick triage without opening individual PRs. The feature leverages GitHub's Search Issues API (already returns comments/labels) and adds per-PR calls to the Pull Requests API for change statistics and reviewer information. Implementation follows phased loading: immediate display of "cheap" metadata from Search API, followed by progressive enrichment with additional data fetched asynchronously.
+Enhance the PR list view with preview metadata (change size, comments, reviewers, labels) to enable quick triage without opening individual PRs. The feature leverages GitHub's Search Issues API (already returns comments/labels) and adds per-PR calls to the Pull Requests API for change statistics and reviewer information. For reviewers, the implementation fetches both `requested_reviewers` (from PR Details API) and completed reviews (from PR Reviews API) to show the complete picture, since GitHub removes users from `requested_reviewers` once they submit a review. Implementation follows phased loading: immediate display of "cheap" metadata from Search API, followed by progressive enrichment with additional data fetched asynchronously.
 
 ## Technical Context
 
@@ -33,7 +33,8 @@ Enhance the PR list view with preview metadata (change size, comments, reviewers
   - `type:pr+state:open+team-review-requested:<team>` (for each team)
 - Search results deduplicated by PR ID before returning
 - Search API response already includes: `comments` (int), `labels` (array)
-- Search API does NOT include: additions, deletions, changed_files, requested_reviewers
+- Search API does NOT include: additions, deletions, changed_files, requested_reviewers, review states
+- Note: GitHub's `requested_reviewers` only shows people who haven't reviewed yet; completed reviews require separate API call
 
 **Current Models**:
 - `PullRequest`: `repositoryOwner`, `repositoryName`, `number`, `title`, `authorLogin`, `authorAvatarURL`, `updatedAt`, `htmlURL`
@@ -281,10 +282,22 @@ protocol GitHubAPI: Sendable {
         number: Int,
         credentials: GitHubCredentials
     ) async throws -> PRPreviewMetadata
+    
+    func fetchPRReviews(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewResponse]
 }
 ```
 
-**Mock Implementation**: Add mock support with configurability
+**Implementation Note**: `fetchPRDetails` implementation calls both:
+1. `GET /repos/{owner}/{repo}/pulls/{number}` for PR details (includes `requested_reviewers`)
+2. `GET /repos/{owner}/{repo}/pulls/{number}/reviews` for completed reviews
+3. Merges the data in `PRDetailsResponse.toPRPreviewMetadata(reviews:)` method
+
+**Mock Implementation**: Add mock support with configurability for both methods
 
 **Acceptance Criteria**:
 - [ ] Protocol method added with documentation

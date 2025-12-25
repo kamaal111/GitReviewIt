@@ -47,6 +47,12 @@ final class MockGitHubAPI: GitHubAPI {
     /// Error to throw from fetchPRDetails
     var fetchPRDetailsErrorToThrow: Error?
 
+    /// Reviews to return from fetchPRReviews (keyed by "owner/repo#number")
+    var prReviewsToReturn: [String: [PRReviewResponse]] = [:]
+
+    /// Error to throw from fetchPRReviews
+    var fetchPRReviewsErrorToThrow: Error?
+
     /// Convenience property for counting PR details fetches
     var prDetailsFetchCount: Int {
         fetchPRDetailsCallCount
@@ -67,6 +73,10 @@ final class MockGitHubAPI: GitHubAPI {
     private(set) var fetchPRDetailsRequests:
         [(owner: String, repo: String, number: Int, credentials: GitHubCredentials)] = []
 
+    /// PR reviews requests captured (owner, repo, number, credentials)
+    private(set) var fetchPRReviewsRequests:
+        [(owner: String, repo: String, number: Int, credentials: GitHubCredentials)] = []
+
     /// Count of how many times fetchUser was called
     var fetchUserCallCount: Int {
         fetchUserCredentials.count
@@ -85,6 +95,11 @@ final class MockGitHubAPI: GitHubAPI {
     /// Count of how many times fetchPRDetails was called
     var fetchPRDetailsCallCount: Int {
         fetchPRDetailsRequests.count
+    }
+
+    /// Count of how many times fetchPRReviews was called
+    var fetchPRReviewsCallCount: Int {
+        fetchPRReviewsRequests.count
     }
 
     // MARK: - GitHubAPI Protocol
@@ -160,6 +175,22 @@ final class MockGitHubAPI: GitHubAPI {
         return metadata
     }
 
+    func fetchPRReviews(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewResponse] {
+        fetchPRReviewsRequests.append((owner, repo, number, credentials))
+
+        if let error = fetchPRReviewsErrorToThrow {
+            throw error
+        }
+
+        let key = "\(owner)/\(repo)#\(number)"
+        return prReviewsToReturn[key] ?? []
+    }
+
     // MARK: - Test Helpers
 
     /// Reset all captured data and configuration
@@ -177,6 +208,9 @@ final class MockGitHubAPI: GitHubAPI {
         fetchPRDetailsErrorToThrow = nil
         fetchPRDetailsRequests.removeAll()
         shouldFailPRDetails.removeAll()
+        prReviewsToReturn.removeAll()
+        fetchPRReviewsErrorToThrow = nil
+        fetchPRReviewsRequests.removeAll()
     }
 
     /// Get the last credentials used for fetchUser

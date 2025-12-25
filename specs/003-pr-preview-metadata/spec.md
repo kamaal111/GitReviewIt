@@ -41,17 +41,19 @@ As a developer reviewing PRs, I want to see the total comment count for each PR 
 
 ### User Story 3 - Reviewer Context Awareness (Priority: P3)
 
-As a developer managing review responsibilities, I want to see who else is assigned as a reviewer for each PR in the list, so I can understand if a review is shared or solely my responsibility, and coordinate accordingly.
+As a developer managing review responsibilities, I want to see all reviewers for each PR (both those requested to review AND those who have already submitted reviews) in the list, so I can understand the full review context, see if I've already reviewed, identify if a review is shared or solely my responsibility, and coordinate accordingly.
 
-**Why this priority**: Knowing co-reviewers helps with workload distribution and coordination, but is less critical for immediate triage decisions compared to change size or discussion volume.
+**Why this priority**: Knowing all reviewers (not just pending requests) helps with workload distribution and coordination. GitHub's `requested_reviewers` field only contains people who haven't reviewed yet - once you submit a review, you're removed from that list. This implementation fetches both requested reviewers and completed reviews to show the complete picture.
 
-**Independent Test**: Can be fully tested by displaying assigned reviewer names when available. Delivers value by showing team coordination context even without other metadata.
+**Independent Test**: Can be fully tested by displaying all reviewer names (requested + completed) with their review states when available. Delivers value by showing complete team coordination context even without other metadata.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am viewing the PR list, **When** a PR has assigned reviewers, **Then** I see the usernames/logins of all assigned reviewers.
-2. **Given** I am viewing the PR list, **When** a PR has only me as a reviewer, **Then** I clearly see that I am the sole reviewer.
-3. **Given** I am viewing the PR list, **When** reviewer data is unavailable, **Then** I see an indicator of unavailability, and the PR list still functions.
+1. **Given** I am viewing the PR list, **When** a PR has requested reviewers who haven't reviewed yet, **Then** I see their usernames/logins with a "requested" indicator.
+2. **Given** I am viewing the PR list, **When** a PR has completed reviews, **Then** I see the reviewers' usernames/logins with their review state (approved, changes requested, or commented).
+3. **Given** I am viewing the PR list, **When** I have submitted a review on a PR, **Then** I see myself in the reviewer list with my review state.
+4. **Given** I am viewing the PR list, **When** a PR has only me as a reviewer (requested or completed), **Then** I clearly see that I am the sole reviewer.
+5. **Given** I am viewing the PR list, **When** reviewer data is unavailable, **Then** I see an indicator of unavailability, and the PR list still functions.
 
 ---
 
