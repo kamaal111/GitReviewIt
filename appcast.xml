@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>GitReviewIt updates</title>
+    <link>https://kamaal.io/gitreviewit/appcast.xml</link>
+    <description>Updates for GitReviewIt App</description>
+    <language>en</language>
+    <item>
+      <title>Version 0.0.7</title>
+      <sparkle:version>7</sparkle:version>
+      <sparkle:shortVersionString>0.0.7</sparkle:shortVersionString>
+      <pubDate>Sun, 25 Dec 2025 16:00:00 +0000</pubDate>
+      <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/kamaal111/gitreviewit/releases/download/0.0.7/GitReviewIt.pkg"
+        type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
