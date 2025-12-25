@@ -2,11 +2,14 @@ import SwiftUI
 
 /// A view that displays preview metadata for a pull request
 ///
-/// Shows change statistics (additions, deletions, changed files) when available.
+/// Shows change statistics (additions, deletions, changed files) and comment count when available.
 /// Displays "—" for unavailable data to distinguish from zero values.
 struct PreviewMetadataView: View {
     /// The preview metadata to display, or nil if not yet loaded
     let previewMetadata: PRPreviewMetadata?
+
+    /// The comment count from the Search API (always available)
+    let commentCount: Int?
 
     var body: some View {
         HStack(spacing: 8) {
@@ -31,6 +34,13 @@ struct PreviewMetadataView: View {
                 label: "−",
                 color: .red,
                 accessibilityLabel: deletionsAccessibilityLabel
+            )
+
+            // Comments
+            metadataItem(
+                value: commentCount,
+                label: "💬",
+                accessibilityLabel: commentsAccessibilityLabel
             )
         }
         .font(.caption)
@@ -69,7 +79,7 @@ struct PreviewMetadataView: View {
 
     // MARK: - Accessibility Labels
 
-    private var filesAccessibilityLabel: String {
+    var filesAccessibilityLabel: String {
         guard let changedFiles = previewMetadata?.changedFiles else {
             return "Files changed: unavailable"
         }
@@ -78,7 +88,7 @@ struct PreviewMetadataView: View {
         return "\(changedFiles) \(fileWord) changed"
     }
 
-    private var additionsAccessibilityLabel: String {
+    var additionsAccessibilityLabel: String {
         guard let additions = previewMetadata?.additions else {
             return "Lines added: unavailable"
         }
@@ -87,13 +97,26 @@ struct PreviewMetadataView: View {
         return "\(additions) \(lineWord) added"
     }
 
-    private var deletionsAccessibilityLabel: String {
+    var deletionsAccessibilityLabel: String {
         guard let deletions = previewMetadata?.deletions else {
             return "Lines deleted: unavailable"
         }
 
         let lineWord = deletions == 1 ? "line" : "lines"
         return "\(deletions) \(lineWord) deleted"
+    }
+
+    var commentsAccessibilityLabel: String {
+        guard let commentCount = commentCount else {
+            return "Comments: unavailable"
+        }
+
+        if commentCount == 0 {
+            return "No comments"
+        }
+
+        let commentWord = commentCount == 1 ? "comment" : "comments"
+        return "\(commentCount) \(commentWord)"
     }
 }
 
@@ -106,7 +129,8 @@ struct PreviewMetadataView: View {
             deletions: 23,
             changedFiles: 7,
             requestedReviewers: []
-        )
+        ),
+        commentCount: 12
     )
     .padding()
 }
@@ -118,12 +142,18 @@ struct PreviewMetadataView: View {
             deletions: 0,
             changedFiles: 1,
             requestedReviewers: []
-        )
+        ),
+        commentCount: 0
     )
     .padding()
 }
 
 #Preview("Unavailable Data") {
-    PreviewMetadataView(previewMetadata: nil)
+    PreviewMetadataView(previewMetadata: nil, commentCount: nil)
+        .padding()
+}
+
+#Preview("With Comments Only") {
+    PreviewMetadataView(previewMetadata: nil, commentCount: 5)
         .padding()
 }

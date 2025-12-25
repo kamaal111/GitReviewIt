@@ -84,11 +84,11 @@ All foundational models and infrastructure that multiple user stories depend on.
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Update PreviewMetadataView to display comment count in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T031 [P] [US2] Add logic to distinguish zero comments from unavailable data in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T032 [P] [US2] Add accessibility label for comment count (VoiceOver support) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
-- [ ] T033 [P] [US2] Add unit tests for comment count display (zero vs unavailable) in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PreviewMetadataViewTests.swift
-- [ ] T034 [P] [US2] Add integration test verifying comment counts from Search API in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataTests.swift
+- [X] T030 [P] [US2] Update PreviewMetadataView to display comment count in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T031 [P] [US2] Add logic to distinguish zero comments from unavailable data in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T032 [P] [US2] Add accessibility label for comment count (VoiceOver support) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PreviewMetadataView.swift
+- [X] T033 [P] [US2] Add unit tests for comment count display (zero vs unavailable) in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PreviewMetadataViewTests.swift
+- [X] T034 [P] [US2] Add integration test verifying comment counts from Search API in app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift
 
 **Checkpoint**: User Story 2 complete - comment counts visible, independently testable
 

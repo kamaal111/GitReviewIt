@@ -49,7 +49,10 @@ struct PullRequestRow: View {
 
                 Spacer()
 
-                PreviewMetadataView(previewMetadata: pullRequest.previewMetadata)
+                PreviewMetadataView(
+                    previewMetadata: pullRequest.previewMetadata,
+                    commentCount: pullRequest.commentCount
+                )
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Created by \(pullRequest.authorLogin), \(relativeTime)")
