@@ -7,6 +7,11 @@ GitReviewIt is a native macOS application built with SwiftUI that helps develope
 - **Personal Access Token Authentication**: Securely log in using GitHub PATs.
 - **GitHub Enterprise Support**: Configurable API base URL for self-hosted GitHub instances.
 - **Review Dashboard**: View a list of all Pull Requests where your review has been requested.
+- **Rich PR Context**: Get immediate context before opening a PR:
+  - **Size Preview**: See additions, deletions, and file counts to estimate review effort.
+  - **Discussion Activity**: View comment counts to gauge discussion complexity.
+  - **Reviewer Status**: See other assigned reviewers and their avatars.
+  - **Labels**: View PR labels with their GitHub colors for quick categorization.
 - **PR Filtering**: Find PRs quickly with powerful filtering capabilities:
   - **Fuzzy Search**: Search by PR title, repository name, or author with intelligent ranking
   - **Organization Filter**: Filter by GitHub organization (persistent)
