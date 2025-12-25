@@ -262,7 +262,7 @@ struct FilterSheet: View {
         repositories: ["CompanyA/backend", "CompanyB/frontend", "PersonalOrg/hobby"],
         teams: .loaded([
             Team(slug: "backend-team", name: "Backend Team", organizationLogin: "CompanyA", repositories: []),
-            Team(slug: "frontend-team", name: "Frontend Team", organizationLogin: "CompanyB", repositories: []),
+            Team(slug: "frontend-team", name: "Frontend Team", organizationLogin: "CompanyB", repositories: [])
         ])
     )
 

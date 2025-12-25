@@ -45,7 +45,7 @@ struct FilterPerformanceTests {
                 selectedOrganizations: ["apple", "google"],
                 selectedRepositories: ["swift", "flutter"],
                 selectedTeams: []
-            ),
+            )
         ]
 
         for config in configs {
@@ -81,7 +81,7 @@ struct FilterPerformanceTests {
             "authentication",
             "memory leak",
             "john",
-            "swift",
+            "swift"
         ]
 
         for query in searchQueries {

@@ -153,7 +153,7 @@ struct FixtureTests {
             "validationFailed",
             "serverError",
             "invalidToken",
-            "scopeInsufficient",
+            "scopeInsufficient"
         ]
 
         for errorType in expectedErrorTypes {

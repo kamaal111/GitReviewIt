@@ -20,12 +20,12 @@
 
 All foundational models and infrastructure that multiple user stories depend on.
 
-- [ ] T001 [P] Create PRLabel model (value type with validation) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRLabel.swift
-- [ ] T002 [P] Create Reviewer model (value type with validation) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/Reviewer.swift
-- [ ] T003 [P] Create PRPreviewMetadata model (container for async metadata) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift
-- [ ] T004 [P] Add unit tests for PRLabel validation in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PRLabelTests.swift
-- [ ] T005 [P] Add unit tests for Reviewer validation in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/ReviewerTests.swift
-- [ ] T006 [P] Add unit tests for PRPreviewMetadata invariants in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PRPreviewMetadataTests.swift
+- [X] T001 [P] Create PRLabel model (value type with validation) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRLabel.swift
+- [X] T002 [P] Create Reviewer model (value type with validation) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/Reviewer.swift
+- [X] T003 [P] Create PRPreviewMetadata model (container for async metadata) in app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift
+- [X] T004 [P] Add unit tests for PRLabel validation in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PRLabelTests.swift
+- [X] T005 [P] Add unit tests for Reviewer validation in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/ReviewerTests.swift
+- [X] T006 [P] Add unit tests for PRPreviewMetadata invariants in app/GitReviewItApp/Tests/GitReviewItAppTests/UnitTests/PRPreviewMetadataTests.swift
 
 ---
 
