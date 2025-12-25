@@ -10,6 +10,7 @@ import SwiftUI
 struct PullRequestListView: View {
     @State private var container: PullRequestListContainer
     @State private var showingFilterSheet = false
+    @State private var showingSettings = false
     private let onLogout: () async -> Void
 
     /// Creates a new pull request list view
@@ -121,15 +122,13 @@ struct PullRequestListView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button(
                     action: {
-                        Task {
-                            await onLogout()
-                        }
+                        showingSettings = true
                     },
                     label: {
-                        Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label("Settings", systemImage: "gearshape")
                     }
                 )
-                .accessibilityLabel("Log out")
+                .accessibilityLabel("Open settings")
             }
 
             ToolbarItem(placement: .automatic) {
@@ -184,6 +183,9 @@ struct PullRequestListView: View {
                     showingFilterSheet = false
                 }
             )
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(onLogout: onLogout)
         }
         .alert(
             "Filter Error",
