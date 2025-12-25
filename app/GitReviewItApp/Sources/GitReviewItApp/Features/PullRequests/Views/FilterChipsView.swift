@@ -7,9 +7,18 @@
 
 import SwiftUI
 
+/// A view displaying active filters as removable chips.
+///
+/// Shows selected organizations and repositories horizontally.
+/// Repository chips are hidden if any organization is selected (as org selection implies all repos).
 struct FilterChipsView: View {
+    /// The current filter configuration
     let configuration: FilterConfiguration
+
+    /// Callback when an organization chip is removed
     let onRemoveOrganization: (String) -> Void
+
+    /// Callback when a repository chip is removed
     let onRemoveRepository: (String) -> Void
 
     var body: some View {

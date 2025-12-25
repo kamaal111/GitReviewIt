@@ -136,4 +136,136 @@ struct ErrorHandlingTests {
         #expect(prs.count == 1, "Should have 1 PR after retry")
         #expect(prs[0].repositoryOwner == "owner", "PR should match")
     }
+
+    // MARK: - T052: Rate Limit Handling with Metadata Enrichment
+
+    @Test
+    func `Rate limit during metadata enrichment does not block PR list`() async throws {
+        let (container, mockAPI, mockStorage) = makePRContainer()
+
+        // Pre-store valid token
+        try await mockStorage.store(
+            GitHubCredentials(token: "ghp_test", baseURL: "https://api.github.com")
+        )
+
+        // Setup PR list to succeed
+        let pr1 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "Test PR 1",
+            authorLogin: "user",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 5,
+            labels: []
+        )
+        let pr2 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 2,
+            title: "Test PR 2",
+            authorLogin: "user",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/2")!,
+            commentCount: 3,
+            labels: []
+        )
+        mockAPI.pullRequestsToReturn = [pr1, pr2]
+
+        // Setup metadata fetch to fail with rate limit
+        let resetDate = Date().addingTimeInterval(3600)
+        mockAPI.fetchPRDetailsErrorToThrow = APIError.rateLimitExceeded(resetAt: resetDate)
+
+        // Act: Load PRs (metadata enrichment will fail)
+        await container.loadPullRequests()
+
+        // Assert: PR list should still be loaded despite metadata failures
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state even with metadata failures")
+            return
+        }
+
+        #expect(prs.count == 2, "Should have 2 PRs")
+        #expect(prs[0].commentCount == 5, "Comment counts from Search API should be available")
+        #expect(prs[1].commentCount == 3, "Comment counts from Search API should be available")
+
+        // Metadata should be nil since enrichment failed
+        #expect(prs[0].previewMetadata == nil, "Metadata should be nil when enrichment fails")
+        #expect(prs[1].previewMetadata == nil, "Metadata should be nil when enrichment fails")
+    }
+
+    // MARK: - T053: Graceful Degradation when Individual PR Metadata Fails
+
+    @Test
+    func `PR list displays correctly when some metadata enrichment fails`() async throws {
+        let (container, mockAPI, mockStorage) = makePRContainer()
+
+        // Pre-store valid token
+        try await mockStorage.store(
+            GitHubCredentials(token: "ghp_test", baseURL: "https://api.github.com")
+        )
+
+        // Setup PR list
+        let pr1 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "Test PR 1",
+            authorLogin: "user",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 5,
+            labels: []
+        )
+        let pr2 = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 2,
+            title: "Test PR 2",
+            authorLogin: "user",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/2")!,
+            commentCount: 3,
+            labels: []
+        )
+        mockAPI.pullRequestsToReturn = [pr1, pr2]
+
+        // Setup metadata: first PR succeeds, second fails
+        mockAPI.mockPRDetailsResponses = [
+            "owner/repo#1": .success(
+                PRPreviewMetadata(
+                    additions: 100,
+                    deletions: 50,
+                    changedFiles: 5,
+                    requestedReviewers: [],
+                    completedReviewers: []
+                )
+            ),
+            "owner/repo#2": .failure(APIError.notFound),
+        ]
+
+        // Act
+        await container.loadPullRequests()
+
+        // Assert
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+
+        #expect(prs.count == 2)
+
+        // First PR should have metadata
+        #expect(prs[0].previewMetadata != nil, "First PR metadata should be loaded")
+        #expect(prs[0].previewMetadata?.additions == 100)
+
+        // Second PR should not have metadata but still be in the list
+        #expect(prs[1].previewMetadata == nil, "Second PR metadata should be nil")
+        #expect(prs[1].commentCount == 3, "Comment count should still be available")
+    }
 }

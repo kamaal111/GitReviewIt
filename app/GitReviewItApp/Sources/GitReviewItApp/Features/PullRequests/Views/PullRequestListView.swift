@@ -84,13 +84,17 @@ struct PullRequestListView: View {
                     } else {
                         ScrollViewReader { proxy in
                             List(container.filteredPullRequests) { pr in
-                                PullRequestRow(pullRequest: pr, currentUserLogin: currentUserLogin)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        container.openPR(url: pr.htmlURL)
-                                    }
-                                    .accessibilityHint("Double tap to open in browser")
-                                    .id(pr.id)
+                                PullRequestRow(
+                                    pullRequest: pr,
+                                    currentUserLogin: currentUserLogin,
+                                    isEnrichingMetadata: container.isEnrichingMetadata
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    container.openPR(url: pr.htmlURL)
+                                }
+                                .accessibilityHint("Double tap to open in browser")
+                                .id(pr.id)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .refreshable {
