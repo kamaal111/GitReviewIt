@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import GitReviewItApp
 
 /// Integration tests for pull request preview metadata, specifically comment counts from Search API
@@ -222,5 +223,140 @@ struct PRPreviewMetadataIntegrationTests {
         #expect(prs[0].commentCount == 15)
         // Verify no additional API calls were made for comment counts
         #expect(mockGitHubAPI.fetchReviewRequestsCallCount == 1)
+    }
+
+    // MARK: - Reviewer Data Tests
+
+    @Test
+    func `PR Details API returns reviewer data for PRs with requested reviewers`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR with reviewers",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        let reviewer1 = Reviewer(login: "reviewer1", avatarURL: URL(string: "https://avatars.github.com/u/1"))
+        let reviewer2 = Reviewer(login: "reviewer2", avatarURL: URL(string: "https://avatars.github.com/u/2"))
+
+        mockGitHubAPI.prDetailsToReturn["owner/repo#1"] = PRPreviewMetadata(
+            additions: 50,
+            deletions: 20,
+            changedFiles: 5,
+            requestedReviewers: [reviewer1, reviewer2]
+        )
+
+        // When
+        await container.loadPullRequests()
+
+        // Then
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(prs.count == 1)
+
+        // Preview metadata should be enriched with reviewer information
+        let metadata = try #require(prs[0].previewMetadata)
+        #expect(metadata.requestedReviewers.count == 2)
+        #expect(metadata.requestedReviewers[0].login == "reviewer1")
+        #expect(metadata.requestedReviewers[1].login == "reviewer2")
+    }
+
+    @Test
+    func `PR Details API returns empty array for PRs with no reviewers`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR without reviewers",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        mockGitHubAPI.prDetailsToReturn["owner/repo#1"] = PRPreviewMetadata(
+            additions: 30,
+            deletions: 10,
+            changedFiles: 2,
+            requestedReviewers: []
+        )
+
+        // When
+        await container.loadPullRequests()
+
+        // Then
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+        #expect(prs.count == 1)
+
+        let metadata = try #require(prs[0].previewMetadata)
+        #expect(metadata.requestedReviewers.isEmpty)
+    }
+
+    @Test
+    func `reviewer data includes avatar URLs when available`() async throws {
+        // Given
+        let credentials = GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        mockCredentialStorage.preloadCredentials(credentials)
+
+        let pr = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 0
+        )
+        mockGitHubAPI.pullRequestsToReturn = [pr]
+
+        let reviewerWithAvatar = Reviewer(
+            login: "octocat",
+            avatarURL: URL(string: "https://avatars.githubusercontent.com/u/1")
+        )
+        let reviewerWithoutAvatar = Reviewer(login: "noavatar", avatarURL: nil)
+
+        mockGitHubAPI.prDetailsToReturn["owner/repo#1"] = PRPreviewMetadata(
+            additions: 40,
+            deletions: 15,
+            changedFiles: 4,
+            requestedReviewers: [reviewerWithAvatar, reviewerWithoutAvatar]
+        )
+
+        // When
+        await container.loadPullRequests()
+
+        // Then
+        guard case .loaded(let prs) = container.loadingState else {
+            Issue.record("Expected loaded state")
+            return
+        }
+
+        let metadata = try #require(prs[0].previewMetadata)
+        #expect(metadata.requestedReviewers.count == 2)
+        #expect(metadata.requestedReviewers[0].avatarURL != nil)
+        #expect(metadata.requestedReviewers[1].avatarURL == nil)
     }
 }

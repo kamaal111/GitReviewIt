@@ -4,6 +4,8 @@ import SwiftUI
 struct PullRequestRow: View {
     /// The pull request to display
     let pullRequest: PullRequest
+    /// The login name of the currently authenticated user
+    let currentUserLogin: String
 
     private var relativeTime: String {
         let formatter = RelativeDateTimeFormatter()
@@ -51,7 +53,8 @@ struct PullRequestRow: View {
 
                 PreviewMetadataView(
                     previewMetadata: pullRequest.previewMetadata,
-                    commentCount: pullRequest.commentCount
+                    commentCount: pullRequest.commentCount,
+                    currentUserLogin: currentUserLogin
                 )
             }
             .accessibilityElement(children: .combine)
@@ -74,6 +77,6 @@ struct PullRequestRow: View {
         htmlURL: URL(string: "https://github.com/kamaal111/GitReviewIt/pull/1")!
     )
     return List {
-        PullRequestRow(pullRequest: pr)
+        PullRequestRow(pullRequest: pr, currentUserLogin: "kamaal111")
     }
 }

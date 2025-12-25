@@ -11,14 +11,17 @@ struct PullRequestListView: View {
     @State private var container: PullRequestListContainer
     @State private var showingFilterSheet = false
     @State private var showingSettings = false
+    private let currentUserLogin: String
     private let onLogout: () async -> Void
 
     /// Creates a new pull request list view
     /// - Parameters:
     ///   - container: The state container managing PR data
+    ///   - currentUserLogin: The login name of the currently authenticated user
     ///   - onLogout: Closure to execute when user requests logout
-    init(container: PullRequestListContainer, onLogout: @escaping () async -> Void) {
+    init(container: PullRequestListContainer, currentUserLogin: String, onLogout: @escaping () async -> Void) {
         _container = State(wrappedValue: container)
+        self.currentUserLogin = currentUserLogin
         self.onLogout = onLogout
     }
 
@@ -81,7 +84,7 @@ struct PullRequestListView: View {
                     } else {
                         ScrollViewReader { proxy in
                             List(container.filteredPullRequests) { pr in
-                                PullRequestRow(pullRequest: pr)
+                                PullRequestRow(pullRequest: pr, currentUserLogin: currentUserLogin)
                                     .contentShape(Rectangle())
                                     .onTapGesture {
                                         container.openPR(url: pr.htmlURL)
@@ -231,8 +234,8 @@ struct PullRequestListView: View {
                     hasActiveFilters && hasSearch
                         ? "No Matching Results"
                         : hasActiveFilters
-                        ? "No PRs Match Filters"
-                        : "No Search Results",
+                            ? "No PRs Match Filters"
+                            : "No Search Results",
                     systemImage: "magnifyingglass",
                     description: Text(emptyStateDescription(hasSearch: hasSearch))
                 )
@@ -275,60 +278,70 @@ struct PullRequestListView: View {
 }
 
 #if DEBUG
-private struct PreviewGitHubAPI: GitHubAPI {
-    func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
-        AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
-    }
+    private struct PreviewGitHubAPI: GitHubAPI {
+        func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
+            AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
+        }
 
-    func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
+        func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
 
-    func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] {
-        [
-            PullRequest(
-                repositoryOwner: "kamaal111",
-                repositoryName: "GitReviewIt",
-                number: 1,
-                title: "Add Pull Request List Feature",
-                authorLogin: "kamaal111",
-                authorAvatarURL: nil,
-                updatedAt: Date(),
-                htmlURL: URL(string: "https://github.com/kamaal111/GitReviewIt/pull/1")!
+        func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] {
+            [
+                PullRequest(
+                    repositoryOwner: "kamaal111",
+                    repositoryName: "GitReviewIt",
+                    number: 1,
+                    title: "Add Pull Request List Feature",
+                    authorLogin: "kamaal111",
+                    authorAvatarURL: nil,
+                    updatedAt: Date(),
+                    htmlURL: URL(string: "https://github.com/kamaal111/GitReviewIt/pull/1")!
+                )
+            ]
+        }
+
+        func fetchPRDetails(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> PRPreviewMetadata {
+            PRPreviewMetadata(
+                additions: 145,
+                deletions: 23,
+                changedFiles: 7,
+                requestedReviewers: []
             )
-        ]
+        }
+
+        func fetchPRReviews(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> [PRReviewResponse] {
+            []
+        }
     }
 
-    func fetchPRDetails(
-        owner: String,
-        repo: String,
-        number: Int,
-        credentials: GitHubCredentials
-    ) async throws -> PRPreviewMetadata {
-        PRPreviewMetadata(
-            additions: 145,
-            deletions: 23,
-            changedFiles: 7,
-            requestedReviewers: []
-        )
+    private struct PreviewCredentialStorage: CredentialStorage {
+        func store(_ credentials: GitHubCredentials) async throws {}
+        func retrieve() async throws -> GitHubCredentials? {
+            GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+        }
+        func delete() async throws {}
     }
-}
 
-private struct PreviewCredentialStorage: CredentialStorage {
-    func store(_ credentials: GitHubCredentials) async throws {}
-    func retrieve() async throws -> GitHubCredentials? {
-        GitHubCredentials(token: "token", baseURL: "https://api.github.com")
+    #Preview {
+        NavigationStack {
+            PullRequestListView(
+                container: PullRequestListContainer(
+                    githubAPI: PreviewGitHubAPI(),
+                    credentialStorage: PreviewCredentialStorage()
+                ),
+                currentUserLogin: "kamaal111",
+                onLogout: {}
+            )
+        }
     }
-    func delete() async throws {}
-}
-
-#Preview {
-    NavigationStack {
-        PullRequestListView(
-            container: PullRequestListContainer(
-                githubAPI: PreviewGitHubAPI(),
-                credentialStorage: PreviewCredentialStorage()
-            ),
-            onLogout: {}
-        )
-    }
-}
 #endif

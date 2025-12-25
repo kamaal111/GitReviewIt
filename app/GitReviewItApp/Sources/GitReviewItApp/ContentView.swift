@@ -44,15 +44,21 @@ struct ContentView: View {
                 LoadingView(message: "Loading...")
             case .authenticated:
                 // User is authenticated - show main app
-                PullRequestListView(
-                    container: PullRequestListContainer(
-                        githubAPI: githubAPI,
-                        credentialStorage: credentialStorage
-                    ),
-                    onLogout: {
-                        await authContainer.logout()
-                    }
-                )
+                if let user = authContainer.authState.user {
+                    PullRequestListView(
+                        container: PullRequestListContainer(
+                            githubAPI: githubAPI,
+                            credentialStorage: credentialStorage
+                        ),
+                        currentUserLogin: user.login,
+                        onLogout: {
+                            await authContainer.logout()
+                        }
+                    )
+                } else {
+                    // Fallback if user is missing (shouldn't happen)
+                    LoadingView(message: "Loading user...")
+                }
             case .unauthenticated:
                 // User is not authenticated - show login
                 LoginView(container: authContainer)
@@ -66,40 +72,49 @@ struct ContentView: View {
 }
 
 #if DEBUG
-private struct PreviewGitHubAPI: GitHubAPI {
-    func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
-        AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
+    private struct PreviewGitHubAPI: GitHubAPI {
+        func fetchUser(credentials: GitHubCredentials) async throws -> AuthenticatedUser {
+            AuthenticatedUser(login: "kamaal111", name: "Kamaal", avatarURL: nil)
+        }
+
+        func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
+
+        func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] { [] }
+
+        func fetchPRDetails(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> PRPreviewMetadata {
+            PRPreviewMetadata(
+                additions: 10,
+                deletions: 5,
+                changedFiles: 2,
+                requestedReviewers: []
+            )
+        }
+
+        func fetchPRReviews(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> [PRReviewResponse] {
+            []
+        }
     }
 
-    func fetchTeams(credentials: GitHubCredentials) async throws -> [Team] { [] }
+    private struct PreviewCredentialStorage: CredentialStorage {
+        func store(_ credentials: GitHubCredentials) async throws {}
+        func retrieve() async throws -> GitHubCredentials? { nil }
+        func delete() async throws {}
+    }
 
-    func fetchReviewRequests(credentials: GitHubCredentials) async throws -> [PullRequest] { [] }
-
-    func fetchPRDetails(
-        owner: String,
-        repo: String,
-        number: Int,
-        credentials: GitHubCredentials
-    ) async throws -> PRPreviewMetadata {
-        PRPreviewMetadata(
-            additions: 10,
-            deletions: 5,
-            changedFiles: 2,
-            requestedReviewers: []
+    #Preview {
+        ContentView(
+            githubAPI: PreviewGitHubAPI(),
+            credentialStorage: PreviewCredentialStorage()
         )
     }
-}
-
-private struct PreviewCredentialStorage: CredentialStorage {
-    func store(_ credentials: GitHubCredentials) async throws {}
-    func retrieve() async throws -> GitHubCredentials? { nil }
-    func delete() async throws {}
-}
-
-#Preview {
-    ContentView(
-        githubAPI: PreviewGitHubAPI(),
-        credentialStorage: PreviewCredentialStorage()
-    )
-}
 #endif
