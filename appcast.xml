@@ -6,15 +6,15 @@
     <description>Updates for GitReviewIt App</description>
     <language>en</language>
     <item>
-      <title>Version 0.0.8</title>
-      <sparkle:version>8</sparkle:version>
-      <sparkle:shortVersionString>0.0.8</sparkle:shortVersionString>
-      <pubDate>Thu, 25 Dec 2025 17:18:47 +0000</pubDate>
+      <title>Version 0.0.9</title>
+      <sparkle:version>9</sparkle:version>
+      <sparkle:shortVersionString>0.0.9</sparkle:shortVersionString>
+      <pubDate>Thu, 25 Dec 2025 17:35:34 +0000</pubDate>
       <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
       <enclosure
-        url="https://github.com/kamaal111/gitreviewit/releases/download/0.0.8/GitReviewIt.pkg"
-        sparkle:edSignature="jLFSJpUPzO38jxKw/cIl7Dw1xg5tUQaSnwo8ZH7rt5hJv9lHmgpxKgQl39uAq5Z8l4MtatuADZY1uzJVHqAcCg=="
-        length="1355199"
+        url="https://github.com/kamaal111/gitreviewit/releases/download/0.0.9/GitReviewIt.pkg"
+        sparkle:edSignature="2uHhIT4uQn2UayqOLf8L2oY298qsdoZYM29zoLZ14BhtNy2/gxBMMf5IjXWrRYpmg/t9Y8bFWajoWZ/q1whGBQ=="
+        length="1355295"
         type="application/octet-stream" />
     </item>
   </channel>
