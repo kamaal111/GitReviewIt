@@ -8,5 +8,7 @@
 	<true/>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
+	<key>SUPublicEDKey</key>
+	<string>yu+VIaR3apeXmb2McEvPZf3AEiaJGnmvsgeNA648Bss=</string>
 </dict>
 </plist>

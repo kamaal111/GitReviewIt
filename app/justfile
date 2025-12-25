@@ -16,6 +16,7 @@ COMPONENT := RESOURCES / "Component.plist"
 PKG_SCRIPTS := RESOURCES / "PKGScripts"
 PKG_INSTALL_LOCATION := "/Applications"
 NOTARY_PROFILE := "AC_NOTARY_PROFILE"
+RELEASE_CONFIGURATION := "Release"
 
 # Default recipe - shows available commands
 default:
@@ -92,15 +93,10 @@ archive: install-xcpretty clean-artifacts prepare-output
     set -o pipefail && xcodebuild archive \
         -project {{ PROJECT }} \
         -scheme {{ SCHEME }} \
-        -configuration Release \
+        -configuration {{ RELEASE_CONFIGURATION }} \
         -archivePath {{ ARCHIVE_PATH }} \
         -sdk {{ MACOS_SDK }} \
         -destination {{ MACOS_PLATFORM }} | xcpretty
-
-# Build the project for macOS
-build: install-xcpretty
-    set -o pipefail && xcodebuild -project {{ PROJECT }} \
-        -scheme {{ SCHEME }} -destination {{ MACOS_PLATFORM }} build | xcpretty
 
 # Clean and build the project
 clean-build: install-xcpretty
@@ -128,25 +124,38 @@ lint:
 # Bootstrap app for development
 bootstrap: install-tools
 
-# Prepare the output directory for build artifacts
+# Generate Sparkle update keys for app signing
+generate-sparkle-keys: build
+    #!/bin/zsh
+
+    SPARKLE_BIN_PATH=$(just get-sparkle-binary-path | tail -n 1)
+    $SPARKLE_BIN_PATH/generate_keys
+
+[private]
+build: install-xcpretty
+    set -o pipefail && xcodebuild -project {{ PROJECT }} \
+        -scheme {{ SCHEME }} -destination {{ MACOS_PLATFORM }} \
+        -configuration {{ RELEASE_CONFIGURATION }} build | xcpretty
+
+[private]
+get-sparkle-binary-path:
+    zsh Scripts/get-sparkle-binary-path.zsh
+
 [private]
 prepare-output:
     #!/bin/zsh
 
     mkdir -p {{ OUTPUT }}
 
-# Remove build payload and output artifacts
 [private]
 clean-artifacts:
     #!/bin/zsh
 
     rm -rf $PAYLOAD {{ OUTPUT }} || exit 1
 
-# Install required developer tools for building
 [private]
 install-tools: install-xcpretty
 
-# Ensure `xcpretty` (and related build tools) are installed
 [private]
 install-xcpretty:
     #!/bin/zsh

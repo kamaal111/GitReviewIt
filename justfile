@@ -30,6 +30,10 @@ open:
 lint:
     just app/lint
 
+# Generate Sparkle update keys for app signing (delegates to `app/generate-sparkle-keys`)
+generate-sparkle-keys:
+    just app/generate-sparkle-keys
+
 # Bootstrap app and web for development
 bootstrap:
     just app/bootstrap
