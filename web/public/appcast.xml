@@ -9,10 +9,12 @@
       <title>Version 0.0.7</title>
       <sparkle:version>7</sparkle:version>
       <sparkle:shortVersionString>0.0.7</sparkle:shortVersionString>
-      <pubDate>Sun, 25 Dec 2025 16:00:00 +0000</pubDate>
+      <pubDate>Thu, 25 Dec 2025 16:34:50 +0000</pubDate>
       <sparkle:minimumSystemVersion>14.6</sparkle:minimumSystemVersion>
       <enclosure
         url="https://github.com/kamaal111/gitreviewit/releases/download/0.0.7/GitReviewIt.pkg"
+        sparkle:edSignature="GtTGDOpE9zqRL73QTKg5GeAnZjwBzGU8StCvjG5FoGGqCMK3pHjm2MhjBo1b/7JflHLQNzPuhLbJPdZHXE2UCA=="
+        length="1355201"
         type="application/octet-stream" />
     </item>
   </channel>

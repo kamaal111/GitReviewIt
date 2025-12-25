@@ -34,6 +34,10 @@ lint:
 generate-sparkle-keys:
     just app/generate-sparkle-keys
 
+# Store NotaryTool credentials for Apple notarization (delegates to `app/create-notary-profile`)
+create-notary-profile:
+    just app/create-notary-profile
+
 # Bootstrap app and web for development
 bootstrap:
     just app/bootstrap

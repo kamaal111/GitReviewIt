@@ -17,6 +17,7 @@ PKG_SCRIPTS := RESOURCES / "PKGScripts"
 PKG_INSTALL_LOCATION := "/Applications"
 NOTARY_PROFILE := "AC_NOTARY_PROFILE"
 RELEASE_CONFIGURATION := "Release"
+APPCAST_PATH := "../web/public/appcast.xml"
 
 # Default recipe - shows available commands
 default:
@@ -78,6 +79,8 @@ create-pkg: create-app
     echo "✅ Done"
     echo "📦 PKG: $PKG_PATH"
 
+    just sign-pkg
+
 # Create app
 create-app: archive
     #!/bin/zsh
@@ -86,8 +89,9 @@ create-app: archive
         -archivePath {{ ARCHIVE_PATH }} \
         -exportOptionsPlist {{ EXPORT_OPTIONS }} \
         -exportPath {{ OUTPUT }} | xcpretty
+
 # Archive app
-archive: install-xcpretty clean-artifacts prepare-output
+archive: install-xcpretty clean-artifacts prepare-output clean
     #!/bin/zsh
 
     set -o pipefail && xcodebuild archive \
@@ -130,6 +134,126 @@ generate-sparkle-keys: build
 
     SPARKLE_BIN_PATH=$(just get-sparkle-binary-path | tail -n 1)
     $SPARKLE_BIN_PATH/generate_keys
+
+# Store NotaryTool credentials for notarization
+create-notary-profile:
+    #!/bin/zsh
+
+    xcrun notarytool store-credentials "{{ NOTARY_PROFILE }}" \
+        --apple-id "$APPLE_ID_EMAIL" \
+        --team-id "$APPLE_TEAM_ID" \
+        --password "$APP_SPECIFIC_PASSWORD"
+
+[private]
+sign-pkg:
+    #!/bin/zsh
+
+    just validate-pkg-output
+
+    pkg_files=($(find {{ OUTPUT }} -maxdepth 1 -name "*.pkg" -type f))
+    SPARKLE_BIN_PATH=$(just get-sparkle-binary-path | tail -n 1)
+    SIGN_UPDATE_PATH="$SPARKLE_BIN_PATH/sign_update"
+
+    if [[ ! -f "$SIGN_UPDATE_PATH" ]]
+    then
+        echo "❌ sign_update binary not found at: $SIGN_UPDATE_PATH"
+        exit 1
+    fi
+
+    echo "🔐 Signing .pkg files with Sparkle..."
+
+    for pkg_file in "${pkg_files[@]}"; do
+        filename=$(basename "$pkg_file")
+        echo "📝 Signing: $filename"
+
+        signature_output=$("$SIGN_UPDATE_PATH" "$pkg_file")
+
+        if [[ $? -eq 0 ]]
+        then
+            echo "$signature_output"
+            echo "✅ Successfully signed: $filename"
+            just update-appcast-from-signature "$signature_output"
+        else
+            echo "❌ Failed to sign: $filename"
+            exit 1
+        fi
+    done
+
+    echo "✅ All .pkg files signed successfully"
+
+[private]
+validate-pkg-output:
+    #!/bin/zsh
+
+    if [[ ! -d {{ OUTPUT }} ]]
+    then
+        echo "❌ Output directory '{{ OUTPUT }}' does not exist"
+        exit 1
+    fi
+
+    pkg_files=($(find {{ OUTPUT }} -maxdepth 1 -name "*.pkg" -type f))
+
+    if [[ ${#pkg_files[@]} -eq 0 ]]
+    then
+        echo "❌ No .pkg files found in '{{ OUTPUT }}' directory"
+        exit 1
+    fi
+
+[private]
+update-appcast-from-signature signature_output:
+    #!/bin/zsh
+
+    signature_output='{{ signature_output }}'
+
+    ed_signature=$(echo "$signature_output" | grep -o 'sparkle:edSignature="[^"]*"' | sed 's/sparkle:edSignature="\(.*\)"/\1/')
+    length=$(echo "$signature_output" | grep -o 'length="[0-9]*"' | sed 's/length="\([0-9]*\)"/\1/')
+
+    if [[ -z "$ed_signature" || -z "$length" ]]
+    then
+        echo "⚠️  Could not extract signature or length from sign_update output"
+        exit 0
+    fi
+
+    echo "🔑 Extracted signature: $ed_signature"
+    echo "📏 Extracted length: $length"
+
+    if [[ ! -f {{ APPCAST_PATH }} ]]
+    then
+        echo "⚠️  appcast.xml not found at: {{ APPCAST_PATH }}"
+        exit 0
+    fi
+
+    version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "{{ APP_PATH }}/Contents/Info.plist")
+    build_number=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "{{ APP_PATH }}/Contents/Info.plist")
+    
+    if [[ -z "$version" || -z "$build_number" ]]
+    then
+        echo "⚠️  Could not extract version or build number from app"
+        exit 1
+    fi
+    
+    echo "📦 Version: $version (Build: $build_number)"
+    
+    # Generate pubDate (1 hour from now in RFC 822 format)
+    pub_date=$(date -u -v+1H '+%a, %d %b %Y %H:%M:%S +0000')
+    echo "📅 Pub date: $pub_date"
+    
+    download_url="https://github.com/kamaal111/gitreviewit/releases/download/$version/GitReviewIt.pkg"
+    echo "🔗 Download URL: $download_url"
+
+    echo "📝 Updating appcast.xml..."
+
+    sed -i '' -E \
+        -e 's|<title>Version [^<]*</title>|<title>Version '"$version"'</title>|' \
+        -e 's|<sparkle:version>[0-9]+</sparkle:version>|<sparkle:version>'"$build_number"'</sparkle:version>|' \
+        -e 's|<sparkle:shortVersionString>[^<]*</sparkle:shortVersionString>|<sparkle:shortVersionString>'"$version"'</sparkle:shortVersionString>|' \
+        -e 's|<pubDate>[^<]*</pubDate>|<pubDate>'"$pub_date"'</pubDate>|' \
+        -e 's|url="https://github.com/kamaal111/gitreviewit/releases/download/[^/]*/GitReviewIt.pkg"|url="'"$download_url"'"|' \
+        -e 's|sparkle:edSignature="[^"]*"|sparkle:edSignature="'"$ed_signature"'"|' \
+        -e 's|length="[0-9]*"|length="'"$length"'"|' \
+        {{ APPCAST_PATH }}
+
+    echo "✅ Updated appcast.xml with version $version (build $build_number), signature, and length"
 
 [private]
 build: install-xcpretty
