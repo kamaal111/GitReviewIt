@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2C6FC02D2EF80F3F008EFD2F /* GitReviewItApp in Frameworks */ = {isa = PBXBuildFile; productRef = 2C6FC02C2EF80F3F008EFD2F /* GitReviewItApp */; };
+		2C73FF302EFED792008490B5 /* GitReviewItAppPoc in Frameworks */ = {isa = PBXBuildFile; productRef = 2C73FF2F2EFED792008490B5 /* GitReviewItAppPoc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2CAF386D2EF8048B004F0A3D /* GitReviewItApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitReviewItApp; sourceTree = "<group>"; };
+		2C03D1C12EFED7480047730B /* GitReviewItAppPoc */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitReviewItAppPoc; sourceTree = "<group>"; };
 		2CCE7FBF2EF7265D006B6614 /* GitReviewIt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GitReviewIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -41,7 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C6FC02D2EF80F3F008EFD2F /* GitReviewItApp in Frameworks */,
+				2C73FF302EFED792008490B5 /* GitReviewItAppPoc in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,9 +58,9 @@
 		2CCE7FB62EF7265D006B6614 = {
 			isa = PBXGroup;
 			children = (
-				2CAF386D2EF8048B004F0A3D /* GitReviewItApp */,
-				2CCE7FC12EF7265D006B6614 /* GitReviewIt */,
+				2C03D1C12EFED7480047730B /* GitReviewItAppPoc */,
 				2CAF38772EF805D5004F0A3D /* Frameworks */,
+				2CCE7FC12EF7265D006B6614 /* GitReviewIt */,
 				2CCE7FC02EF7265D006B6614 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -93,7 +93,7 @@
 			);
 			name = GitReviewIt;
 			packageProductDependencies = (
-				2C6FC02C2EF80F3F008EFD2F /* GitReviewItApp */,
+				2C73FF2F2EFED792008490B5 /* GitReviewItAppPoc */,
 			);
 			productName = GitReviewIt;
 			productReference = 2CCE7FBF2EF7265D006B6614 /* GitReviewIt.app */;
@@ -390,9 +390,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2C6FC02C2EF80F3F008EFD2F /* GitReviewItApp */ = {
+		2C73FF2F2EFED792008490B5 /* GitReviewItAppPoc */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = GitReviewItApp;
+			productName = GitReviewItAppPoc;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

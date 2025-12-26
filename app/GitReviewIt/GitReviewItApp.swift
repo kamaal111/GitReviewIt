@@ -6,11 +6,11 @@
 //
 
 import SwiftUI
-import GitReviewItApp
+import GitReviewItAppPoc
 
 @main
 struct GitReviewItApp: App {
     var body: some Scene {
-        GitReviewItScene()
+        GitReviewItAppPocScene()
     }
 }
