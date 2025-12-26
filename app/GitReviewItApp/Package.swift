@@ -17,11 +17,16 @@ let package = Package(
             name: "GitReviewItApp",
             dependencies: [
                 .product(name: "GitReviewItSelfUpdate", package: "GitReviewItFeatures"),
+                .product(name: "GitReviewItAuthentication", package: "GitReviewItFeatures"),
             ]
         ),
         .testTarget(
             name: "GitReviewItAppTests",
-            dependencies: ["GitReviewItApp"]
+            dependencies: ["GitReviewItApp"],
+            swiftSettings: [
+                .treatAllWarnings(as: .error),
+                .strictMemorySafety(),
+            ]
         ),
     ]
 )

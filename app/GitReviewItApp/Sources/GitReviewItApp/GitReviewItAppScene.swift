@@ -7,6 +7,7 @@
 
 import SwiftUI
 import GitReviewItSelfUpdate
+import GitReviewItAuthentication
 
 public struct GitReviewItAppScene: Scene {
     public init() { }
@@ -14,6 +15,7 @@ public struct GitReviewItAppScene: Scene {
     public var body: some Scene {
         WindowGroup {
             ContentView()
+                .withAuth()
         }
         .withSelfUpdateCommand()
     }

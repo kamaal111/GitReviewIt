@@ -6,11 +6,13 @@
 //
 
 import Sparkle
+import KamaalLogger
 
 final class GitReviewItSelfUpdateService: ObservableObject {
     @Published private(set) var canCheckForUpdates = false
 
     private let updaterController: SPUStandardUpdaterController
+    private let logger = KamaalLogger(from: GitReviewItSelfUpdateService.self, failOnError: true)
 
     convenience init() {
         let updaterController = SPUStandardUpdaterController(
@@ -23,6 +25,7 @@ final class GitReviewItSelfUpdateService: ObservableObject {
 
     init(updaterController: SPUStandardUpdaterController) {
         self.updaterController = updaterController
+        logger.debug("Init \(String(describing: Self.self))")
 
         updaterController.updater
             .publisher(for: \.canCheckForUpdates)
