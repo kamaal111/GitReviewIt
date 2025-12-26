@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-github-pr-viewer`  
 **Created**: December 20, 2025  
-**Status**: Draft  
+**Status**: Completed  
 **Input**: User description: "Build an Apple-platform SwiftUI app that provides a convenient way to view all GitHub Pull Requests the user needs to review"
 
 ## User Scenarios & Testing *(mandatory)*

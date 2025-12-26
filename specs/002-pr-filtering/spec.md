@@ -2,7 +2,7 @@
 
 **Feature Branch**: `002-pr-filtering`  
 **Created**: December 23, 2025  
-**Status**: Draft  
+**Status**: Completed  
 **Input**: User description: "Add filtering capabilities to the PR list experience: fuzzy search over PRs, persistent structured filters by organization, repository, and team"
 
 ## User Scenarios & Testing *(mandatory)*

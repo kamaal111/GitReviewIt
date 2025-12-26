@@ -2,7 +2,7 @@
 
 **Feature Branch**: `003-pr-preview-metadata`  
 **Created**: December 25, 2025  
-**Status**: Draft  
+**Status**: Completed  
 **Input**: User description: "Enhance each Pull Request entry with additional preview metadata so users can quickly assess review effort and context without opening the PR."
 
 ## User Scenarios & Testing *(mandatory)*

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `004-pr-status-insights`
 **Created**: 2025-12-25
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "Enhance PR list with status insights"
 
 ## User Scenarios & Testing *(mandatory)*

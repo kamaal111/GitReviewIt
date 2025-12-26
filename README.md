@@ -9,9 +9,12 @@ GitReviewIt is a native macOS application built with SwiftUI that helps develope
 - **Review Dashboard**: View a list of all Pull Requests where your review has been requested.
 - **Rich PR Context**: Get immediate context before opening a PR:
   - **Size Preview**: See additions, deletions, and file counts to estimate review effort.
-  - **Discussion Activity**: View comment counts to gauge discussion complexity.
-  - **Reviewer Status**: See other assigned reviewers and their avatars.
+  - **Discussion Activity**: View total comment counts (issue + review comments) to gauge discussion complexity.
+  - **Reviewer Status**: See both requested reviewers AND completed reviewers with their review states (Approved, Changes Requested, Commented).
   - **Labels**: View PR labels with their GitHub colors for quick categorization.
+  - **Draft Status**: Clearly identify which PRs are still in draft state.
+  - **CI/Check Status**: See at-a-glance status of CI checks (Passing, Failing, Pending, Unknown).
+  - **Merge Conflicts**: Identify PRs with merge conflicts that need author attention.
 - **PR Filtering**: Find PRs quickly with powerful filtering capabilities:
   - **Fuzzy Search**: Search by PR title, repository name, or author with intelligent ranking
   - **Organization Filter**: Filter by GitHub organization (persistent)
@@ -53,7 +56,14 @@ GitReviewIt is a native macOS application built with SwiftUI that helps develope
 2. **Authenticate**:
    - Enter your GitHub Personal Access Token (PAT).
    - (Optional) Enter your GitHub Enterprise API URL if not using GitHub.com.
-3. **View PRs**: Once authenticated, the app will display a list of PRs awaiting your review.
+3. **View PRs**: Once authenticated, the app displays all PRs awaiting your review with rich context:
+   - **Draft Badge**: PRs in draft state are clearly labeled
+   - **Size Metrics**: Additions, deletions, and file count for each PR
+   - **Comments**: Total comment count (issue + review comments)
+   - **Reviewers**: Both requested reviewers and completed reviews with their states
+   - **Labels**: PR labels with GitHub colors
+   - **CI Status**: Check status (Passing/Failing/Pending)
+   - **Merge Status**: Conflicts indicator when merge conflicts exist
 4. **Filter PRs**:
    - **Search**: Type in the search box to find PRs by title, repository, or author. Results update as you type with intelligent ranking.
    - **Structured Filters**: Click the Filter button to open the filter sheet:
