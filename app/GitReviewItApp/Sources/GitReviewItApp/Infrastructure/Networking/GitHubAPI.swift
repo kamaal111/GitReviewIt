@@ -57,6 +57,22 @@ protocol GitHubAPI: Sendable {
         credentials: GitHubCredentials
     ) async throws -> [PRReviewResponse]
 
+    /// Fetches review comments (inline code comments) for a specific pull request
+    ///
+    /// - Parameters:
+    ///   - owner: Repository owner username
+    ///   - repo: Repository name
+    ///   - number: PR number
+    ///   - credentials: GitHub credentials (token + baseURL)
+    /// - Returns: Array of PRReviewCommentResponse objects (may be empty)
+    /// - Throws: APIError if request fails
+    func fetchPRReviewComments(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewCommentResponse]
+
     /// Fetches check runs for a specific Git reference (commit SHA)
     ///
     /// - Parameters:
@@ -224,9 +240,16 @@ final class GitHubAPIClient: GitHubAPI {
 
             let detailsResponse = try decoder.decode(PRDetailsResponse.self, from: data)
 
-            // Fetch reviews and check runs in parallel with graceful degradation
-            // If either fails, we still return metadata with default values
+            // Fetch reviews, review comments, and check runs in parallel with graceful degradation
+            // If any fails, we still return metadata with default values
             async let reviewsResult = fetchPRReviews(
+                owner: owner,
+                repo: repo,
+                number: number,
+                credentials: credentials
+            )
+
+            async let reviewCommentsResult = fetchPRReviewComments(
                 owner: owner,
                 repo: repo,
                 number: number,
@@ -240,8 +263,9 @@ final class GitHubAPIClient: GitHubAPI {
                 credentials: credentials
             )
 
-            // Await both parallel requests with graceful error handling
+            // Await all parallel requests with graceful error handling
             let reviews: [PRReviewResponse]
+            let reviewComments: [PRReviewCommentResponse]
             let checkStatus: PRCheckStatus
 
             do {
@@ -252,6 +276,13 @@ final class GitHubAPIClient: GitHubAPI {
             }
 
             do {
+                reviewComments = try await reviewCommentsResult
+            } catch {
+                // If review comments fail, continue with empty array
+                reviewComments = []
+            }
+
+            do {
                 let checkRuns = try await checkRunsResult
                 checkStatus = checkRuns.aggregatedStatus
             } catch {
@@ -259,7 +290,11 @@ final class GitHubAPIClient: GitHubAPI {
                 checkStatus = .unknown
             }
 
-            return detailsResponse.toPRPreviewMetadata(reviews: reviews, checkStatus: checkStatus)
+            return detailsResponse.toPRPreviewMetadata(
+                reviews: reviews,
+                checkStatus: checkStatus,
+                reviewCommentCount: reviewComments.count
+            )
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {
@@ -293,6 +328,39 @@ final class GitHubAPIClient: GitHubAPI {
             }
 
             return try decoder.decode([PRReviewResponse].self, from: data)
+        } catch let error as HTTPError {
+            throw mapHTTPErrorToAPIError(error)
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func fetchPRReviewComments(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewCommentResponse] {
+        let baseURL = credentials.baseURL.trimmingSuffix("/")
+        guard let url = URL(string: "\(baseURL)/repos/\(owner)/\(repo)/pulls/\(number)/comments") else {
+            throw APIError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+
+        do {
+            let (data, response) = try await httpClient.perform(request)
+
+            guard (200...299).contains(response.statusCode) else {
+                throw mapHTTPError(statusCode: response.statusCode, data: data, response: response)
+            }
+
+            return try decoder.decode([PRReviewCommentResponse].self, from: data)
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {

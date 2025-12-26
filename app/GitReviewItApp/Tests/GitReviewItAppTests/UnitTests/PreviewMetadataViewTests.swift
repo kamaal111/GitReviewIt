@@ -87,7 +87,8 @@ struct PreviewMetadataViewTests {
             additions: 100,
             deletions: 50,
             changedFiles: 8,
-            requestedReviewers: []
+            requestedReviewers: [],
+            totalCommentCount: 3
         )
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
@@ -391,7 +392,8 @@ struct PreviewMetadataViewTests {
             additions: 50,
             deletions: 20,
             changedFiles: 4,
-            requestedReviewers: []
+            requestedReviewers: [],
+            totalCommentCount: 8
         )
         let view = PreviewMetadataView(
             previewMetadata: previewMetadata,
@@ -569,7 +571,8 @@ struct PreviewMetadataViewTests {
                 Reviewer(login: "reviewer1", avatarURL: nil)
             ],
             checkStatus: .passing,
-            mergeStatus: .mergeable
+            mergeStatus: .mergeable,
+            totalCommentCount: 5
         )
 
         let draftPR = PullRequest(

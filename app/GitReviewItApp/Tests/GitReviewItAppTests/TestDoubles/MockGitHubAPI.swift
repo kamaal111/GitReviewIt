@@ -56,6 +56,12 @@ final class MockGitHubAPI: GitHubAPI {
     /// Error to throw from fetchPRReviews
     var fetchPRReviewsErrorToThrow: Error?
 
+    /// Review comments to return from fetchPRReviewComments (keyed by "owner/repo#number")
+    var prReviewCommentsToReturn: [String: [PRReviewCommentResponse]] = [:]
+
+    /// Error to throw from fetchPRReviewComments
+    var fetchPRReviewCommentsErrorToThrow: Error?
+
     /// Check runs to return from fetchCheckRuns (keyed by "owner/repo@ref")
     var checkRunsToReturn: [String: CheckRunsResponse] = [:]
 
@@ -86,6 +92,10 @@ final class MockGitHubAPI: GitHubAPI {
     private(set) var fetchPRReviewsRequests:
         [(owner: String, repo: String, number: Int, credentials: GitHubCredentials)] = []
 
+    /// PR review comments requests captured (owner, repo, number, credentials)
+    private(set) var fetchPRReviewCommentsRequests:
+        [(owner: String, repo: String, number: Int, credentials: GitHubCredentials)] = []
+
     /// Check runs requests captured (owner, repo, ref, credentials)
     private(set) var fetchCheckRunsRequests:
         [(owner: String, repo: String, ref: String, credentials: GitHubCredentials)] = []
@@ -113,6 +123,11 @@ final class MockGitHubAPI: GitHubAPI {
     /// Count of how many times fetchPRReviews was called
     var fetchPRReviewsCallCount: Int {
         fetchPRReviewsRequests.count
+    }
+
+    /// Count of how many times fetchPRReviewComments was called
+    var fetchPRReviewCommentsCallCount: Int {
+        fetchPRReviewCommentsRequests.count
     }
 
     /// Count of how many times fetchCheckRuns was called
@@ -220,6 +235,22 @@ final class MockGitHubAPI: GitHubAPI {
         return prReviewsToReturn[key] ?? []
     }
 
+    func fetchPRReviewComments(
+        owner: String,
+        repo: String,
+        number: Int,
+        credentials: GitHubCredentials
+    ) async throws -> [PRReviewCommentResponse] {
+        fetchPRReviewCommentsRequests.append((owner, repo, number, credentials))
+
+        if let error = fetchPRReviewCommentsErrorToThrow {
+            throw error
+        }
+
+        let key = "\(owner)/\(repo)#\(number)"
+        return prReviewCommentsToReturn[key] ?? []
+    }
+
     func fetchCheckRuns(
         owner: String,
         repo: String,
@@ -262,6 +293,9 @@ final class MockGitHubAPI: GitHubAPI {
         prReviewsToReturn.removeAll()
         fetchPRReviewsErrorToThrow = nil
         fetchPRReviewsRequests.removeAll()
+        prReviewCommentsToReturn.removeAll()
+        fetchPRReviewCommentsErrorToThrow = nil
+        fetchPRReviewCommentsRequests.removeAll()
         checkRunsToReturn.removeAll()
         fetchCheckRunsErrorToThrow = nil
         fetchCheckRunsRequests.removeAll()

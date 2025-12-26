@@ -490,6 +490,7 @@ import Testing
                 "additions": 42,
                 "deletions": 17,
                 "changed_files": 5,
+                "comments": 0,
                 "requested_reviewers": [
                     {
                         "login": "reviewer1",
@@ -560,6 +561,7 @@ import Testing
                 "additions": 30,
                 "deletions": 10,
                 "changed_files": 3,
+                "comments": 0,
                 "requested_reviewers": [],
                 "head": {
                     "sha": "def456"
@@ -639,6 +641,7 @@ import Testing
                 "additions": 15,
                 "deletions": 8,
                 "changed_files": 2,
+                "comments": 0,
                 "requested_reviewers": [
                     {
                         "login": "reviewer2",

@@ -18,6 +18,7 @@ struct PRDetailsResponse: Decodable {
     let head: Head
     let mergeable: Bool?
     let mergeable_state: String?
+    let comments: Int  // Issue comments count from PR API
 
     struct ReviewerResponse: Decodable {
         let login: String
@@ -33,10 +34,12 @@ struct PRDetailsResponse: Decodable {
     /// - Parameters:
     ///   - reviews: Optional array of completed PR reviews
     ///   - checkStatus: CI/CD check status (defaults to .unknown)
-    /// - Returns: PRPreviewMetadata with change stats, reviewers, and check status
+    ///   - reviewCommentCount: Number of review comments (inline code comments) (defaults to 0)
+    /// - Returns: PRPreviewMetadata with change stats, reviewers, check status, and comment counts
     func toPRPreviewMetadata(
         reviews: [PRReviewResponse] = [],
-        checkStatus: PRCheckStatus = .unknown
+        checkStatus: PRCheckStatus = .unknown,
+        reviewCommentCount: Int = 0
     ) -> PRPreviewMetadata {
         // Convert requested reviewers
         let requestedReviewers = requested_reviewers.map { reviewer in
@@ -86,6 +89,9 @@ struct PRDetailsResponse: Decodable {
             mergeStatus = .unknown
         }
 
+        // Total comments = issue comments from PR + review comments (inline code comments)
+        let totalComments = comments + reviewCommentCount
+
         return PRPreviewMetadata(
             additions: additions,
             deletions: deletions,
@@ -93,7 +99,8 @@ struct PRDetailsResponse: Decodable {
             requestedReviewers: requestedReviewers,
             completedReviewers: completedReviewers,
             checkStatus: checkStatus,
-            mergeStatus: mergeStatus
+            mergeStatus: mergeStatus,
+            totalCommentCount: totalComments
         )
     }
 }
@@ -106,6 +113,24 @@ struct PRReviewResponse: Decodable {
     let user: UserResponse
     let state: String  // "APPROVED", "CHANGES_REQUESTED", "COMMENTED", etc.
     let submitted_at: Date?
+
+    struct UserResponse: Decodable {
+        let login: String
+        let avatar_url: URL?
+    }
+}
+
+/// Response structure for decoding GitHub PR Review Comments API
+///
+/// Maps to the response from `GET /repos/{owner}/{repo}/pulls/{number}/comments`
+/// See: https://docs.github.com/en/rest/pulls/comments#list-review-comments-on-a-pull-request
+///
+/// This represents inline code review comments (different from issue comments)
+struct PRReviewCommentResponse: Decodable {
+    let id: Int
+    let user: UserResponse
+    let body: String
+    let created_at: Date
 
     struct UserResponse: Decodable {
         let login: String

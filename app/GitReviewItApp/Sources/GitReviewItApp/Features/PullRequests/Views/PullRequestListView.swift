@@ -327,6 +327,15 @@ struct PullRequestListView: View {
             []
         }
 
+        func fetchPRReviewComments(
+            owner: String,
+            repo: String,
+            number: Int,
+            credentials: GitHubCredentials
+        ) async throws -> [PRReviewCommentResponse] {
+            []
+        }
+
         func fetchCheckRuns(
             owner: String,
             repo: String,

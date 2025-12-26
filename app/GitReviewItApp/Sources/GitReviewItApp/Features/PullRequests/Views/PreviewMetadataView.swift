@@ -43,9 +43,10 @@ struct PreviewMetadataView: View {
                 accessibilityLabel: deletionsAccessibilityLabel
             )
 
-            // Comments
+            // Comments - prefer metadata's totalCommentCount when available,
+            // otherwise fall back to Search API commentCount
             metadataItem(
-                value: commentCount,
+                value: previewMetadata?.totalCommentCount ?? commentCount,
                 label: "💬",
                 accessibilityLabel: commentsAccessibilityLabel
             )
@@ -287,16 +288,19 @@ struct PreviewMetadataView: View {
     }
 
     var commentsAccessibilityLabel: String {
-        guard let commentCount = commentCount else {
+        // Prefer metadata's totalCommentCount when available, otherwise use Search API commentCount
+        let count = previewMetadata?.totalCommentCount ?? commentCount
+
+        guard let count = count else {
             return "Comments: unavailable"
         }
 
-        if commentCount == 0 {
+        if count == 0 {
             return "No comments"
         }
 
-        let commentWord = commentCount == 1 ? "comment" : "comments"
-        return "\(commentCount) \(commentWord)"
+        let commentWord = count == 1 ? "comment" : "comments"
+        return "\(count) \(commentWord)"
     }
 
     /// Generates an accessibility label for check status

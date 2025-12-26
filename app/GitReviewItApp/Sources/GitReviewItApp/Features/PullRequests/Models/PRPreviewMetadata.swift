@@ -75,6 +75,7 @@ struct PRPreviewMetadata: Equatable, Sendable {
     let completedReviewers: [Reviewer]
     let checkStatus: PRCheckStatus
     let mergeStatus: PRMergeStatus
+    let totalCommentCount: Int
 
     /// Creates new preview metadata with validation
     ///
@@ -86,6 +87,7 @@ struct PRPreviewMetadata: Equatable, Sendable {
     ///   - completedReviewers: List of reviewers who have completed reviews (empty array if none)
     ///   - checkStatus: CI/CD check status (defaults to .unknown)
     ///   - mergeStatus: Mergeability status (defaults to .unknown)
+    ///   - totalCommentCount: Total count of all comments (issue + review comments, must be >= 0)
     ///
     /// - Precondition: All count fields must be non-negative
     init(
@@ -95,7 +97,8 @@ struct PRPreviewMetadata: Equatable, Sendable {
         requestedReviewers: [Reviewer],
         completedReviewers: [Reviewer] = [],
         checkStatus: PRCheckStatus = .unknown,
-        mergeStatus: PRMergeStatus = .unknown
+        mergeStatus: PRMergeStatus = .unknown,
+        totalCommentCount: Int = 0
     ) {
         guard additions >= 0 else {
             preconditionFailure("additions must be non-negative, got: \(additions)")
@@ -109,6 +112,10 @@ struct PRPreviewMetadata: Equatable, Sendable {
             preconditionFailure("changedFiles must be non-negative, got: \(changedFiles)")
         }
 
+        guard totalCommentCount >= 0 else {
+            preconditionFailure("totalCommentCount must be non-negative, got: \(totalCommentCount)")
+        }
+
         self.additions = additions
         self.deletions = deletions
         self.changedFiles = changedFiles
@@ -116,13 +123,14 @@ struct PRPreviewMetadata: Equatable, Sendable {
         self.completedReviewers = completedReviewers
         self.checkStatus = checkStatus
         self.mergeStatus = mergeStatus
+        self.totalCommentCount = totalCommentCount
 
         logger.debug(
             """
             Created PRPreviewMetadata: +\(additions) -\(deletions) \
             ~\(changedFiles) files, \(requestedReviewers.count) requested, \
-            \(completedReviewers.count) completed, checks: \(checkStatus.rawValue), \
-            merge: \(mergeStatus.rawValue)
+            \(completedReviewers.count) completed, \(totalCommentCount) comments, \
+            checks: \(checkStatus.rawValue), merge: \(mergeStatus.rawValue)
             """
         )
     }
