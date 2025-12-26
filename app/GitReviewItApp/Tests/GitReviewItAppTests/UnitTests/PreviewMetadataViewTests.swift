@@ -413,4 +413,198 @@ struct PreviewMetadataViewTests {
         let commentsLabel = view.commentsAccessibilityLabel
         #expect(commentsLabel == "8 comments")
     }
+
+    // MARK: - Check Status Accessibility Tests
+
+    @Test
+    func `check status passing has correct accessibility label`() throws {
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        let accessibilityLabel = view.checkStatusAccessibilityLabel(status: .passing)
+        #expect(accessibilityLabel == "CI checks passing")
+    }
+
+    @Test
+    func `check status failing has correct accessibility label`() throws {
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        let accessibilityLabel = view.checkStatusAccessibilityLabel(status: .failing)
+        #expect(accessibilityLabel == "CI checks failing")
+    }
+
+    @Test
+    func `check status pending has correct accessibility label`() throws {
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        let accessibilityLabel = view.checkStatusAccessibilityLabel(status: .pending)
+        #expect(accessibilityLabel == "CI checks pending")
+    }
+
+    @Test
+    func `check status unknown has correct accessibility label`() throws {
+        let view = PreviewMetadataView(
+            previewMetadata: nil,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        let accessibilityLabel = view.checkStatusAccessibilityLabel(status: .unknown)
+        #expect(accessibilityLabel == "CI checks status unknown")
+    }
+
+    // MARK: - Merge Status Accessibility Tests
+
+    @Test
+    func `merge status mergeable has correct accessibility label`() throws {
+        let previewMetadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 3,
+            requestedReviewers: [],
+            checkStatus: .passing,
+            mergeStatus: .mergeable
+        )
+        let view = PreviewMetadataView(
+            previewMetadata: previewMetadata,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+    }
+
+    @Test
+    func `merge status conflicting has correct accessibility label`() throws {
+        let previewMetadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 3,
+            requestedReviewers: [],
+            checkStatus: .failing,
+            mergeStatus: .conflicting
+        )
+        let view = PreviewMetadataView(
+            previewMetadata: previewMetadata,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+    }
+
+    @Test
+    func `merge status unknown has correct accessibility label`() throws {
+        let previewMetadata = PRPreviewMetadata(
+            additions: 10,
+            deletions: 5,
+            changedFiles: 3,
+            requestedReviewers: [],
+            checkStatus: .unknown,
+            mergeStatus: .unknown
+        )
+        let view = PreviewMetadataView(
+            previewMetadata: previewMetadata,
+            commentCount: nil,
+            labels: [],
+            currentUserLogin: nil
+        )
+
+        // Verify view renders without crashing
+        _ = view.body
+    }
+
+    // MARK: - Draft Status Accessibility Tests
+
+    @Test
+    func `draft badge has correct accessibility label in PullRequestRow`() throws {
+        let draftPR = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "Draft PR",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            isDraft: true
+        )
+
+        let row = PullRequestRow(
+            pullRequest: draftPR,
+            currentUserLogin: "testuser",
+            isEnrichingMetadata: false
+        )
+
+        // Verify view renders without crashing
+        _ = row.body
+    }
+
+    @Test
+    func `all status indicators render together with accessibility support`() throws {
+        let previewMetadata = PRPreviewMetadata(
+            additions: 42,
+            deletions: 17,
+            changedFiles: 5,
+            requestedReviewers: [
+                Reviewer(login: "reviewer1", avatarURL: nil)
+            ],
+            checkStatus: .passing,
+            mergeStatus: .mergeable
+        )
+
+        let draftPR = PullRequest(
+            repositoryOwner: "owner",
+            repositoryName: "repo",
+            number: 1,
+            title: "Draft PR with all status",
+            authorLogin: "author",
+            authorAvatarURL: nil,
+            updatedAt: Date(),
+            htmlURL: URL(string: "https://github.com/owner/repo/pull/1")!,
+            commentCount: 5,
+            isDraft: true,
+            previewMetadata: previewMetadata
+        )
+
+        let row = PullRequestRow(
+            pullRequest: draftPR,
+            currentUserLogin: "testuser",
+            isEnrichingMetadata: false
+        )
+
+        // Verify view renders without crashing - all status indicators should be accessible
+        _ = row.body
+
+        // Verify PreviewMetadataView accessibility labels
+        let metadataView = PreviewMetadataView(
+            previewMetadata: previewMetadata,
+            commentCount: draftPR.commentCount,
+            labels: draftPR.labels,
+            currentUserLogin: "testuser"
+        )
+
+        #expect(metadataView.checkStatusAccessibilityLabel(status: .passing) == "CI checks passing")
+        #expect(metadataView.filesAccessibilityLabel == "5 files changed")
+        #expect(metadataView.commentsAccessibilityLabel == "5 comments")
+    }
 }

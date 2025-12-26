@@ -224,26 +224,42 @@ final class GitHubAPIClient: GitHubAPI {
 
             let detailsResponse = try decoder.decode(PRDetailsResponse.self, from: data)
 
-            // Fetch reviews and check runs in parallel
-            async let reviews = fetchPRReviews(
+            // Fetch reviews and check runs in parallel with graceful degradation
+            // If either fails, we still return metadata with default values
+            async let reviewsResult = fetchPRReviews(
                 owner: owner,
                 repo: repo,
                 number: number,
                 credentials: credentials
             )
 
-            async let checkRuns = fetchCheckRuns(
+            async let checkRunsResult = fetchCheckRuns(
                 owner: owner,
                 repo: repo,
                 ref: detailsResponse.head.sha,
                 credentials: credentials
             )
 
-            // Await both parallel requests
-            let (reviewsResult, checkRunsResult) = try await (reviews, checkRuns)
-            let checkStatus = checkRunsResult.aggregatedStatus
+            // Await both parallel requests with graceful error handling
+            let reviews: [PRReviewResponse]
+            let checkStatus: PRCheckStatus
 
-            return detailsResponse.toPRPreviewMetadata(reviews: reviewsResult, checkStatus: checkStatus)
+            do {
+                reviews = try await reviewsResult
+            } catch {
+                // If reviews fail, continue with empty array
+                reviews = []
+            }
+
+            do {
+                let checkRuns = try await checkRunsResult
+                checkStatus = checkRuns.aggregatedStatus
+            } catch {
+                // If check runs fail, use unknown status
+                checkStatus = .unknown
+            }
+
+            return detailsResponse.toPRPreviewMetadata(reviews: reviews, checkStatus: checkStatus)
         } catch let error as HTTPError {
             throw mapHTTPErrorToAPIError(error)
         } catch let error as APIError {

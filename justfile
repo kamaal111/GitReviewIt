@@ -58,15 +58,13 @@ web-publish:
     just web/publish
 
 [private]
-ensure-github-release:
+ensure-github-release: verify-gh-cli verify-repository-state
     #!/bin/zsh
 
     set -e
 
     PROJECT_VERSION=$(just get-project-version)
 
-    just verify-gh-cli
-    just verify-repository-state
     just check-release-exists "$PROJECT_VERSION"
     just ensure-pkg-built "$PROJECT_VERSION"
     just create-github-release "$PROJECT_VERSION"

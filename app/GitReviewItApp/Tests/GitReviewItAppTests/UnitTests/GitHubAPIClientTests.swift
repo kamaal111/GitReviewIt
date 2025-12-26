@@ -479,4 +479,216 @@ import Testing
         let companyCTeam = teams.first { $0.organizationLogin == "CompanyC" }
         #expect(companyCTeam?.name == "Backend Team C")
     }
+
+    // MARK: - Graceful Degradation Tests
+
+    @Test func `fetchPRDetails succeeds when check runs fail with unknown status`() async throws {
+        // Given: PR details endpoint succeeds, but check runs endpoint fails
+        let prDetailsJSON = Data(
+            """
+            {
+                "additions": 42,
+                "deletions": 17,
+                "changed_files": 5,
+                "requested_reviewers": [
+                    {
+                        "login": "reviewer1",
+                        "avatar_url": "https://avatars.github.com/u/1"
+                    }
+                ],
+                "head": {
+                    "sha": "abc123"
+                },
+                "mergeable": true,
+                "mergeable_state": "clean"
+            }
+            """.utf8)
+
+        let reviewsJSON = Data("[]".utf8)
+
+        mockHTTPClient.responseHandler = { request in
+            let urlString = request.url?.absoluteString ?? ""
+
+            if urlString.contains("/repos/owner/repo/pulls/1") && !urlString.contains("/reviews") {
+                return (
+                    prDetailsJSON,
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            if urlString.contains("/repos/owner/repo/pulls/1/reviews") {
+                return (
+                    reviewsJSON,
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            if urlString.contains("/repos/owner/repo/commits/abc123/check-runs") {
+                // Check runs endpoint fails
+                return (
+                    Data(),
+                    HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!)
+        }
+
+        // When: fetchPRDetails is called
+        let metadata = try await api.fetchPRDetails(
+            owner: "owner",
+            repo: "repo",
+            number: 1,
+            credentials: credentials
+        )
+
+        // Then: Metadata is returned with check status as unknown
+        #expect(metadata.additions == 42)
+        #expect(metadata.deletions == 17)
+        #expect(metadata.changedFiles == 5)
+        #expect(metadata.requestedReviewers.count == 1)
+        #expect(metadata.requestedReviewers[0].login == "reviewer1")
+        #expect(metadata.checkStatus == .unknown)
+        #expect(metadata.mergeStatus == .mergeable)
+    }
+
+    @Test func `fetchPRDetails succeeds when reviews fail with empty reviewers`() async throws {
+        // Given: PR details endpoint succeeds, but reviews endpoint fails
+        let prDetailsJSON = Data(
+            """
+            {
+                "additions": 30,
+                "deletions": 10,
+                "changed_files": 3,
+                "requested_reviewers": [],
+                "head": {
+                    "sha": "def456"
+                },
+                "mergeable": false,
+                "mergeable_state": "dirty"
+            }
+            """.utf8)
+
+        let checkRunsJSON = Data(
+            """
+            {
+                "total_count": 2,
+                "check_runs": [
+                    {
+                        "status": "completed",
+                        "conclusion": "success"
+                    },
+                    {
+                        "status": "completed",
+                        "conclusion": "success"
+                    }
+                ]
+            }
+            """.utf8)
+
+        mockHTTPClient.responseHandler = { request in
+            let urlString = request.url?.absoluteString ?? ""
+
+            if urlString.contains("/repos/owner/repo/pulls/2") && !urlString.contains("/reviews") {
+                return (
+                    prDetailsJSON,
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            if urlString.contains("/repos/owner/repo/pulls/2/reviews") {
+                // Reviews endpoint fails
+                return (
+                    Data(),
+                    HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            if urlString.contains("/repos/owner/repo/commits/def456/check-runs") {
+                return (
+                    checkRunsJSON,
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!)
+        }
+
+        // When: fetchPRDetails is called
+        let metadata = try await api.fetchPRDetails(
+            owner: "owner",
+            repo: "repo",
+            number: 2,
+            credentials: credentials
+        )
+
+        // Then: Metadata is returned with empty reviewers
+        #expect(metadata.additions == 30)
+        #expect(metadata.deletions == 10)
+        #expect(metadata.changedFiles == 3)
+        #expect(metadata.completedReviewers.isEmpty)
+        #expect(metadata.checkStatus == .passing)
+        #expect(metadata.mergeStatus == .conflicting)
+    }
+
+    @Test func `fetchPRDetails succeeds when both reviews and checks fail`() async throws {
+        // Given: PR details succeeds, but both reviews and check runs fail
+        let prDetailsJSON = Data(
+            """
+            {
+                "additions": 15,
+                "deletions": 8,
+                "changed_files": 2,
+                "requested_reviewers": [
+                    {
+                        "login": "reviewer2",
+                        "avatar_url": "https://avatars.github.com/u/2"
+                    }
+                ],
+                "head": {
+                    "sha": "ghi789"
+                },
+                "mergeable": null,
+                "mergeable_state": "unknown"
+            }
+            """.utf8)
+
+        mockHTTPClient.responseHandler = { request in
+            let urlString = request.url?.absoluteString ?? ""
+
+            if urlString.contains("/repos/owner/repo/pulls/3") && !urlString.contains("/reviews") {
+                return (
+                    prDetailsJSON,
+                    HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            // Both reviews and check runs fail
+            if urlString.contains("/reviews") || urlString.contains("/check-runs") {
+                return (
+                    Data(),
+                    HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
+                )
+            }
+
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!)
+        }
+
+        // When: fetchPRDetails is called
+        let metadata = try await api.fetchPRDetails(
+            owner: "owner",
+            repo: "repo",
+            number: 3,
+            credentials: credentials
+        )
+
+        // Then: Metadata is returned with default values for failed endpoints
+        #expect(metadata.additions == 15)
+        #expect(metadata.deletions == 8)
+        #expect(metadata.changedFiles == 2)
+        #expect(metadata.requestedReviewers.count == 1)
+        #expect(metadata.completedReviewers.isEmpty)
+        #expect(metadata.checkStatus == .unknown)
+        #expect(metadata.mergeStatus == .unknown)
+    }
 }

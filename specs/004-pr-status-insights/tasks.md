@@ -23,16 +23,16 @@
 
 **Goal**: Users can see if CI checks are passing, failing, or pending.
 
-- [ ] T007 [US2] Create `PRCheckStatus` enum in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
-- [ ] T008 [US2] Create `CheckRunsResponse` model in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/CheckRunsResponse.swift`
-- [ ] T009 [US2] Add `fetchCheckRuns` method to `GitHubAPI` protocol in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
-- [ ] T010 [US2] Implement `fetchCheckRuns` in `GitHubAPIClient` in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
-- [ ] T011 [US2] Update `PRPreviewMetadata` to include `checkStatus` in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
-- [ ] T012 [US2] Update `PRDetailsResponse` to decode `head.sha` in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift`
-- [ ] T013 [US2] Update `fetchPRDetails` to fetch check runs in parallel in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
-- [ ] T014 [US2] Update `MockGitHubAPI` to support check runs in `app/GitReviewItApp/Tests/GitReviewItAppTests/TestDoubles/MockGitHubAPI.swift`
-- [ ] T015 [US2] Add integration tests for check statuses in `app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift`
-- [ ] T016 [US2] Update `PullRequestRow` to display check status in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
+- [X] T007 [US2] Create `PRCheckStatus` enum in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
+- [X] T008 [US2] Create `CheckRunsResponse` model in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/CheckRunsResponse.swift`
+- [X] T009 [US2] Add `fetchCheckRuns` method to `GitHubAPI` protocol in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
+- [X] T010 [US2] Implement `fetchCheckRuns` in `GitHubAPIClient` in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
+- [X] T011 [US2] Update `PRPreviewMetadata` to include `checkStatus` in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Models/PRPreviewMetadata.swift`
+- [X] T012 [US2] Update `PRDetailsResponse` to decode `head.sha` in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/PRDetailsResponse.swift`
+- [X] T013 [US2] Update `fetchPRDetails` to fetch check runs in parallel in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
+- [X] T014 [US2] Update `MockGitHubAPI` to support check runs in `app/GitReviewItApp/Tests/GitReviewItAppTests/TestDoubles/MockGitHubAPI.swift`
+- [X] T015 [US2] Add integration tests for check statuses in `app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift`
+- [X] T016 [US2] Update `PullRequestRow` to display check status in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
 
 ## Phase 4: User Story 3 - View Mergeability Status (P1)
 
@@ -49,13 +49,13 @@
 
 **Goal**: App remains functional even if status insights fail to load.
 
-- [ ] T023 [US4] Verify graceful degradation in `fetchPRDetails` error handling in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
-- [ ] T024 [US4] Add test for partial failure (checks fail, details succeed) in `app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift`
-- [ ] T025 [US4] Ensure UI handles "Unknown" states gracefully in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
+- [X] T023 [US4] Verify graceful degradation in `fetchPRDetails` error handling in `app/GitReviewItApp/Sources/GitReviewItApp/Infrastructure/Networking/GitHubAPI.swift`
+- [X] T024 [US4] Add test for partial failure (checks fail, details succeed) in `app/GitReviewItApp/Tests/GitReviewItAppTests/IntegrationTests/PRPreviewMetadataIntegrationTests.swift`
+- [X] T025 [US4] Ensure UI handles "Unknown" states gracefully in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T026 Verify VoiceOver labels for all new status indicators in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
+- [X] T026 Verify VoiceOver labels for all new status indicators in `app/GitReviewItApp/Sources/GitReviewItApp/Features/PullRequests/Views/PullRequestRow.swift`
 
 ## Dependencies
 

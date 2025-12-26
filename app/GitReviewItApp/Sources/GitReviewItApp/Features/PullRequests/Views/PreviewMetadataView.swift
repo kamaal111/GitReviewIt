@@ -50,13 +50,13 @@ struct PreviewMetadataView: View {
                 accessibilityLabel: commentsAccessibilityLabel
             )
 
-            // Check status (only show if metadata is loaded)
-            if let checkStatus = previewMetadata?.checkStatus {
+            // Check status (only show if metadata is loaded and not unknown)
+            if let checkStatus = previewMetadata?.checkStatus, checkStatus != .unknown {
                 checkStatusView(status: checkStatus)
             }
 
-            // Merge status (only show if metadata is loaded)
-            if let mergeStatus = previewMetadata?.mergeStatus {
+            // Merge status (only show if metadata is loaded and not unknown)
+            if let mergeStatus = previewMetadata?.mergeStatus, mergeStatus != .unknown {
                 mergeStatusView(status: mergeStatus)
             }
 
