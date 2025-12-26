@@ -4,29 +4,27 @@
 import PackageDescription
 
 let package = Package(
-    name: "GitReviewItApp",
+    name: "GitReviewItAppPoc",
     platforms: [.macOS(.v14)],
     products: [
-        .library(name: "GitReviewItApp", targets: ["GitReviewItApp"]),
+        .library(name: "GitReviewItAppPoc", targets: ["GitReviewItAppPoc"])
     ],
     dependencies: [
         .package(path: "../GitReviewItFeatures"),
     ],
     targets: [
         .target(
-            name: "GitReviewItApp",
+            name: "GitReviewItAppPoc",
             dependencies: [
                 .product(name: "GitReviewItSelfUpdate", package: "GitReviewItFeatures"),
-                .product(name: "GitReviewItAuthentication", package: "GitReviewItFeatures"),
             ]
         ),
         .testTarget(
-            name: "GitReviewItAppTests",
-            dependencies: ["GitReviewItApp"],
-            swiftSettings: [
-                .treatAllWarnings(as: .error),
-                .strictMemorySafety(),
+            name: "GitReviewItAppPocTests",
+            dependencies: ["GitReviewItAppPoc"],
+            resources: [
+                .process("Fixtures")
             ]
-        ),
+        )
     ]
 )

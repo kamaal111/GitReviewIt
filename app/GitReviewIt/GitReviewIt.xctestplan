@@ -18,6 +18,13 @@
         "identifier" : "GitReviewItAppTests",
         "name" : "GitReviewItAppTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:GitReviewItAppPoc",
+        "identifier" : "GitReviewItAppPocTests",
+        "name" : "GitReviewItAppPocTests"
+      }
     }
   ],
   "version" : 1
