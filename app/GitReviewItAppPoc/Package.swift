@@ -10,13 +10,13 @@ let package = Package(
         .library(name: "GitReviewItAppPoc", targets: ["GitReviewItAppPoc"])
     ],
     dependencies: [
-        .package(url: "https://github.com/sparkle-project/Sparkle", .upToNextMajor(from: "2.8.1"))
+        .package(path: "../GitReviewItFeatures"),
     ],
     targets: [
         .target(
             name: "GitReviewItAppPoc",
             dependencies: [
-                "Sparkle"
+                .product(name: "GitReviewItSelfUpdate", package: "GitReviewItFeatures"),
             ]
         ),
         .testTarget(
